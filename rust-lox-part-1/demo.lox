@@ -1,0 +1,2 @@
+var language = "lox";
+print "this is a example of lox as parsed by my rust interpreter"
