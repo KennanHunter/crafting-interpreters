@@ -203,10 +203,20 @@ fn scan_token(
             }
         }
 
-        character => {
+        literal if literal.is_ascii_alphabetic() => {
+            let mut contained_literal = String::from(literal);
+
+            characters
+                .take_while(|char| char.is_ascii_alphanumeric())
+                .for_each(|char| contained_literal.push(char));
+
+            TokenType::from_literal(contained_literal)
+        }
+
+        unrecognized_character => {
             return Err(ParsingError {
                 line_number: *line,
-                message: format!("unrecognized character {}", character),
+                message: format!("unrecognized character {}", unrecognized_character),
             })
         }
     };
@@ -502,6 +512,48 @@ mod tests {
                     lexeme: "".to_string(),
                     line_number: 1,
                     token_type: TokenType::EOF,
+                })
+            )
+        );
+    }
+
+    #[test]
+    fn scan_keywords() {
+        let tokens_result = scan_tokens("return and print".to_string());
+
+        assert!(tokens_result.is_ok());
+
+        let tokens_vec = tokens_result.unwrap();
+        let mut tokens = tokens_vec.iter();
+
+        assert_eq!(
+            tokens.next(),
+            Some(
+                &(Token {
+                    lexeme: "".to_string(),
+                    line_number: 1,
+                    token_type: TokenType::Return,
+                })
+            )
+        );
+
+        assert_eq!(
+            tokens.next(),
+            Some(
+                &(Token {
+                    lexeme: "".to_string(),
+                    line_number: 1,
+                    token_type: TokenType::And,
+                })
+            )
+        );
+        assert_eq!(
+            tokens.next(),
+            Some(
+                &(Token {
+                    lexeme: "".to_string(),
+                    line_number: 1,
+                    token_type: TokenType::Print,
                 })
             )
         );
