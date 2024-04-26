@@ -1,6 +1,7 @@
 pub mod errors;
 pub mod scanner;
 pub mod tokens;
+pub mod tree;
 
 use std::{env, fs};
 
