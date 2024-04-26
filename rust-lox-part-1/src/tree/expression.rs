@@ -94,56 +94,56 @@ impl Display for Operation {
             Operation::Less(binary_operation) => {
                 write!(
                     f,
-                    "( < {} {})",
+                    "( < {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
             Operation::LessEqual(binary_operation) => {
                 write!(
                     f,
-                    "( <= {} {})",
+                    "( <= {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
             Operation::Greater(binary_operation) => {
                 write!(
                     f,
-                    "( > {} {})",
+                    "( > {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
             Operation::GreaterEqual(binary_operation) => {
                 write!(
                     f,
-                    "( >= {} {})",
+                    "( >= {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
             Operation::Plus(binary_operation) => {
                 write!(
                     f,
-                    "( + {} {})",
+                    "( + {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
             Operation::Minus(binary_operation) => {
                 write!(
                     f,
-                    "( - {} {})",
+                    "( - {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
             Operation::Multiply(binary_operation) => {
                 write!(
                     f,
-                    "( * {} {})",
+                    "( * {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
             Operation::Divide(binary_operation) => {
                 write!(
                     f,
-                    "( / {} {})",
+                    "( / {} {} )",
                     *binary_operation.left, *binary_operation.right
                 )
             }
@@ -177,7 +177,7 @@ mod tests {
             ))),
             right: Box::from(Expression::Literal(ExpressionLiteral::Number(5.2))),
         }));
-        
+
         assert_eq!(expression.to_string(), "( + 10020030.35 5.20)");
     }
 
