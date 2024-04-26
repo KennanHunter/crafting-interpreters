@@ -41,5 +41,7 @@ fn run_file(file_name: &str) -> String {
 /// Core function that takes in the raw source code and does stuff
 ///
 fn run(source: String) {
-    let _ = scan_tokens(source);
+    let tokens = scan_tokens(source).unwrap();
+
+    println!("{:#?}", tokens);
 }

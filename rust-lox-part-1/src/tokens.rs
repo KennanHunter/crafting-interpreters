@@ -33,11 +33,10 @@ impl Display for Token {
 }
 
 impl TokenType {
-    pub fn from_literal(literal: String) -> Option<TokenType> {
+    pub fn from_literal(literal: &String) -> Option<TokenType> {
         // TODO: Stop this HashMap from being built every time we run TokenType
         let mut literal_lookup: HashMap<&str, TokenType> = HashMap::new();
 
-        literal_lookup.insert("and", TokenType::And);
         literal_lookup.insert("class", TokenType::Class);
         literal_lookup.insert("else", TokenType::Else);
         literal_lookup.insert("false", TokenType::False);

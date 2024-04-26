@@ -212,7 +212,10 @@ fn scan_token(
                 .take_while(|char| char.is_ascii_alphanumeric())
                 .for_each(|char| contained_literal.push(char));
 
-            TokenType::from_literal(contained_literal)
+            match TokenType::from_literal(&contained_literal) {
+                Some(keyword) => Some(keyword),
+                None => Some(TokenType::Identifier(contained_literal)),
+            }
         }
 
         unrecognized_character => {
