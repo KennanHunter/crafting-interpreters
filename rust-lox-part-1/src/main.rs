@@ -1,10 +1,12 @@
 pub mod errors;
+pub mod parser;
 pub mod scanner;
 pub mod tokens;
 pub mod tree;
 
 use std::{env, fs};
 
+use parser::parse_tokens;
 use scanner::scan_tokens;
 
 fn main() {
@@ -44,5 +46,7 @@ fn run_file(file_name: &str) -> String {
 fn run(source: String) {
     let tokens = scan_tokens(source).unwrap();
 
-    println!("{:#?}", tokens);
+    let syntax_tree = parse_tokens(tokens);
+
+    println!("{:#?}", syntax_tree)
 }

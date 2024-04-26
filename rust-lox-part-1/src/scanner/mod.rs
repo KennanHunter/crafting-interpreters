@@ -3,13 +3,18 @@ pub mod tests;
 use std::{iter::Peekable, str::Chars};
 
 use crate::{
-    errors::ParsingError,
+    errors::ScanningError,
     tokens::{Token, TokenType},
 };
 
-pub fn scan_tokens(source: String) -> Result<Vec<Token>, Vec<ParsingError>> {
+/// Takes in the raw source code text and converts it to either a vector of tokens
+/// or a vector of the errors found
+///
+/// Errors found returns all errors in the scanning process, even if there are
+/// multiple scanning issues
+pub fn scan_tokens(source: String) -> Result<Vec<Token>, Vec<ScanningError>> {
     let mut tokens: Vec<Token> = Vec::new();
-    let mut parsing_errors: Vec<ParsingError> = Vec::new();
+    let mut parsing_errors: Vec<ScanningError> = Vec::new();
 
     let mut line = 1;
     let mut characters: Peekable<Chars> = source.chars().peekable();
@@ -35,7 +40,7 @@ pub fn scan_tokens(source: String) -> Result<Vec<Token>, Vec<ParsingError>> {
                 continue;
             }
             Err(err) => {
-                parsing_errors.push(ParsingError {
+                parsing_errors.push(ScanningError {
                     line_number: line,
                     message: err.message,
                 });
@@ -51,10 +56,13 @@ pub fn scan_tokens(source: String) -> Result<Vec<Token>, Vec<ParsingError>> {
     return Ok(tokens);
 }
 
+/// Progresses characters past the next token and returns it in TokenType enum form
+///
+/// Can error with ScanningError on malformed literals or non-ascii characters
 fn scan_token(
     characters: &mut Peekable<Chars>,
     line: &mut usize,
-) -> Result<Option<TokenType>, ParsingError> {
+) -> Result<Option<TokenType>, ScanningError> {
     let character: Option<char> = characters.next();
 
     if character.is_none() {
@@ -138,7 +146,7 @@ fn scan_token(
 
                     Some(char) => contained_string.push(char),
                     None => {
-                        return Err(ParsingError {
+                        return Err(ScanningError {
                             line_number: *line,
                             message: "End of string not found".to_string(),
                         })
@@ -197,7 +205,7 @@ fn scan_token(
             match contained_number_literal.parse::<f64>() {
                 Ok(parsed) => Some(TokenType::Number(parsed)),
                 Err(_) => {
-                    return Err(ParsingError {
+                    return Err(ScanningError {
                         line_number: *line,
                         message: "Failed to parse number".to_string(),
                     })
@@ -219,7 +227,7 @@ fn scan_token(
         }
 
         unrecognized_character => {
-            return Err(ParsingError {
+            return Err(ScanningError {
                 line_number: *line,
                 message: format!("unrecognized character {}", unrecognized_character),
             })

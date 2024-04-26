@@ -19,31 +19,31 @@ pub enum ExpressionLiteral {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct EqualityOperation {
-    left: Box<Expression>,
-    right: Box<Expression>,
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ComparisonOperation {
-    left: Box<Expression>,
-    right: Box<Expression>,
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct FactorOperation {
-    left: Box<Expression>,
-    right: Box<Expression>,
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct TermOperation {
-    left: Box<Expression>,
-    right: Box<Expression>,
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct UnaryOperation {
-    operand: Box<Expression>,
+    pub operand: Box<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
