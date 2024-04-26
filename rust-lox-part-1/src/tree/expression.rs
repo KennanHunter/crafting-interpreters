@@ -18,7 +18,25 @@ pub enum ExpressionLiteral {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct BinaryOperation {
+pub struct EqualityOperation {
+    left: Box<Expression>,
+    right: Box<Expression>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ComparisonOperation {
+    left: Box<Expression>,
+    right: Box<Expression>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct FactorOperation {
+    left: Box<Expression>,
+    right: Box<Expression>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct TermOperation {
     left: Box<Expression>,
     right: Box<Expression>,
 }
@@ -33,17 +51,17 @@ pub enum Operation {
     Negate(UnaryOperation),
     Not(UnaryOperation),
 
-    Equal(BinaryOperation),
-    NotEqual(BinaryOperation),
-    Less(BinaryOperation),
-    LessEqual(BinaryOperation),
-    Greater(BinaryOperation),
-    GreaterEqual(BinaryOperation),
+    Equal(EqualityOperation),
+    NotEqual(EqualityOperation),
+    Less(ComparisonOperation),
+    LessEqual(ComparisonOperation),
+    Greater(ComparisonOperation),
+    GreaterEqual(ComparisonOperation),
 
-    Plus(BinaryOperation),
-    Minus(BinaryOperation),
-    Multiply(BinaryOperation),
-    Divide(BinaryOperation),
+    Plus(TermOperation),
+    Minus(TermOperation),
+    Multiply(FactorOperation),
+    Divide(FactorOperation),
 }
 
 impl Display for Expression {
@@ -154,7 +172,8 @@ impl Display for Operation {
 #[cfg(test)]
 mod tests {
     use crate::tree::expression::{
-        BinaryOperation, Expression, ExpressionLiteral, Operation, UnaryOperation,
+        EqualityOperation, Expression, ExpressionLiteral, FactorOperation, Operation,
+        TermOperation, UnaryOperation,
     };
 
     #[test]
@@ -171,24 +190,24 @@ mod tests {
 
     #[test]
     fn simple_operation_can_be_pretty_printed() {
-        let expression = Expression::Operation(Operation::Plus(BinaryOperation {
+        let expression = Expression::Operation(Operation::Plus(TermOperation {
             left: Box::from(Expression::Literal(ExpressionLiteral::Number(
                 10020030.3456,
             ))),
             right: Box::from(Expression::Literal(ExpressionLiteral::Number(5.2))),
         }));
 
-        assert_eq!(expression.to_string(), "( + 10020030.35 5.20)");
+        assert_eq!(expression.to_string(), "( + 10020030.35 5.20 )");
     }
 
     #[test]
     fn deeply_nested_expression_can_be_pretty_printed() {
-        let expression = Expression::Operation(Operation::Multiply(BinaryOperation {
-            left: Box::new(Expression::Operation(Operation::Divide(BinaryOperation {
+        let expression = Expression::Operation(Operation::Multiply(FactorOperation {
+            left: Box::new(Expression::Operation(Operation::Divide(FactorOperation {
                 left: Box::new(Expression::Literal(ExpressionLiteral::Number(
                     10020030.3456,
                 ))),
-                right: Box::new(Expression::Operation(Operation::Plus(BinaryOperation {
+                right: Box::new(Expression::Operation(Operation::Plus(TermOperation {
                     left: Box::new(Expression::Literal(ExpressionLiteral::True)),
                     right: Box::new(Expression::Operation(Operation::Negate(UnaryOperation {
                         operand: Box::new(Expression::Literal(ExpressionLiteral::Number(
@@ -198,7 +217,7 @@ mod tests {
                 }))),
             }))),
 
-            right: Box::new(Expression::Operation(Operation::Equal(BinaryOperation {
+            right: Box::new(Expression::Operation(Operation::Equal(EqualityOperation {
                 left: Box::new(Expression::Literal(ExpressionLiteral::True)),
                 right: Box::new(Expression::Operation(Operation::Negate(UnaryOperation {
                     operand: Box::new(Expression::Literal(ExpressionLiteral::Number(120341.2332))),
@@ -208,7 +227,7 @@ mod tests {
 
         assert_eq!(
             expression.to_string(),
-            "( * ( / 10020030.35 ( + ( true ) ( - 120341.23 ))) ( == ( true ) ( - 120341.23 ) ))"
+            "( * ( / 10020030.35 ( + ( true ) ( - 120341.23 ) ) ) ( == ( true ) ( - 120341.23 ) ) )"
         );
     }
 }
