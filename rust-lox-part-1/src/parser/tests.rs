@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use crate::{
-    parser::{comparison, equality, term, ParsingResult},
+    parser::{comparison, equality, expression, term, ParsingResult},
     scanner::scan_tokens,
     tokens::{Token, TokenType},
     tree::expression::{
@@ -294,5 +294,27 @@ fn test_equality_parse_nested_equality() {
                 }
             )))
         })))
+    );
+}
+
+#[test]
+fn test_expression_parse_grouped_expression() {
+    let tokens = scan_tokens("(4 + 3) * 2".to_string()).unwrap();
+
+    let result: ParsingResult = expression(&mut tokens.iter().peekable());
+
+    assert_eq!(
+        result,
+        Ok(Expression::Operation(Operation::Multiply(
+            FactorOperation {
+                left: Box::new(Expression::Grouping(Box::new(Expression::Operation(
+                    Operation::Plus(TermOperation {
+                        left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                        right: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                    })
+                )))),
+                right: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0)))
+            }
+        )))
     );
 }

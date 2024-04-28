@@ -210,17 +210,43 @@ fn primary(tokens: &mut TokenIter) -> ParsingResult {
 
         TokenType::Number(number) => Ok(Expression::Literal(ExpressionLiteral::Number(*number))),
 
+        // TokenType::LeftParen => {
+        //     // TODO: Find better way of creating a valid type parameter for expression
+        // let mut grouped_tokens: Vec<Token> = Vec::new();
+
+        // tokens
+        //     .take_while(|token| token.token_type != TokenType::RightParen)
+        //     .cloned()
+        //     .collect_into(&mut grouped_tokens);
+
+        // // Consume the trailing right parenthesis
+        // tokens.next();
+
+        // let expr = expression(&mut grouped_tokens.iter().peekable())?;
+
+        // Ok(Expression::Grouping(Box::from(expr)))
+        // }
         TokenType::LeftParen => {
             let expr = expression(tokens)?;
 
-            // TODO: Consume right parenthesis
-
-            Ok(Expression::Grouping(Box::from(expr)))
+            match tokens.next() {
+                Some(token) if token.token_type == TokenType::RightParen => {
+                    Ok(Expression::Grouping(Box::from(expr)))
+                }
+                _ => Err(ParsingError {
+                    line_number: token.line_number,
+                    message: "Closing parenthesis expected".to_string(),
+                }),
+            }
         }
 
-        _ => Err(ParsingError {
+        unrecognized_type => Err(ParsingError {
             line_number: token.line_number,
-            message: "Unrecognized token made it to primary".to_string(),
+            message: format!(
+                "Unrecognized token: {:?} made it to primary",
+                *unrecognized_type
+            )
+            .to_string(),
         }),
     }
 }

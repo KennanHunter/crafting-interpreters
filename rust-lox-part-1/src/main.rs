@@ -1,3 +1,6 @@
+#![feature(anonymous_lifetime_in_impl_trait)]
+#![feature(iter_collect_into)]
+
 pub mod errors;
 pub mod parser;
 pub mod scanner;
