@@ -4,7 +4,7 @@ use crate::errors::ParsingError;
 use crate::tokens::{Token, TokenType};
 use crate::tree::expression::{
     ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
-    Operation, UnaryOperation,
+    Operation, TermOperation, UnaryOperation,
 };
 
 type TokenIter<'a> = std::iter::Peekable<std::slice::Iter<'a, Token>>;
@@ -44,7 +44,7 @@ fn equality(tokens: &mut TokenIter) -> ParsingResult {
      -> Result<EqualityOperation, ParsingError> {
         Ok(EqualityOperation {
             left: Box::new(expression),
-            right: Box::new(term(tokens)?),
+            right: Box::new(equality(tokens)?),
         })
     };
 
@@ -52,11 +52,15 @@ fn equality(tokens: &mut TokenIter) -> ParsingResult {
         // Look at the next token, if it is a equality
         match tokens.peek() {
             Some(next_token) if next_token.token_type == TokenType::BangEqual => {
+                tokens.next();
+
                 expression = Expression::Operation(Operation::NotEqual(new_equality_operation(
                     expression, tokens,
                 )?))
             }
+
             Some(next_token) if next_token.token_type == TokenType::EqualEqual => {
+                tokens.next();
                 expression = Expression::Operation(Operation::Equal(new_equality_operation(
                     expression, tokens,
                 )?))
@@ -76,7 +80,7 @@ fn comparison(tokens: &mut TokenIter) -> ParsingResult {
      -> Result<ComparisonOperation, ParsingError> {
         Ok(ComparisonOperation {
             left: Box::new(expression),
-            right: Box::new(term(tokens)?),
+            right: Box::new(comparison(tokens)?),
         })
     };
 
@@ -84,23 +88,37 @@ fn comparison(tokens: &mut TokenIter) -> ParsingResult {
         // Look at the next token, if it is a equality
         expression = match tokens.peek() {
             Some(next_token) if next_token.token_type == TokenType::Greater => {
+                tokens.next();
+
                 Expression::Operation(Operation::Greater(new_comparison_operation(
                     expression, tokens,
                 )?))
             }
+
             Some(next_token) if next_token.token_type == TokenType::GreaterEqual => {
+                tokens.next();
+
                 Expression::Operation(Operation::GreaterEqual(new_comparison_operation(
                     expression, tokens,
                 )?))
             }
-            Some(next_token) if next_token.token_type == TokenType::Less => Expression::Operation(
-                Operation::Less(new_comparison_operation(expression, tokens)?),
-            ),
+
+            Some(next_token) if next_token.token_type == TokenType::Less => {
+                tokens.next();
+
+                Expression::Operation(Operation::Less(new_comparison_operation(
+                    expression, tokens,
+                )?))
+            }
+
             Some(next_token) if next_token.token_type == TokenType::LessEqual => {
+                tokens.next();
+
                 Expression::Operation(Operation::LessEqual(new_comparison_operation(
                     expression, tokens,
                 )?))
             }
+
             _ => break,
         }
     }
@@ -111,24 +129,25 @@ fn comparison(tokens: &mut TokenIter) -> ParsingResult {
 fn term(tokens: &mut TokenIter) -> ParsingResult {
     let mut expression = factor(tokens)?;
 
-    let new_term_operation = |expression: Expression,
-                              tokens: &mut TokenIter|
-     -> Result<ComparisonOperation, ParsingError> {
-        Ok(ComparisonOperation {
-            left: Box::new(expression),
-            right: Box::new(term(tokens)?),
-        })
-    };
+    let new_term_operation =
+        |expression: Expression, tokens: &mut TokenIter| -> Result<TermOperation, ParsingError> {
+            Ok(TermOperation {
+                left: Box::new(expression),
+                right: Box::new(term(tokens)?),
+            })
+        };
 
     loop {
         // Look at the next token, if it is a equality
         expression = match tokens.peek() {
             Some(next_token) if next_token.token_type == TokenType::Plus => {
-                Expression::Operation(Operation::Greater(new_term_operation(expression, tokens)?))
+                tokens.next();
+                Expression::Operation(Operation::Plus(new_term_operation(expression, tokens)?))
             }
-            Some(next_token) if next_token.token_type == TokenType::Minus => Expression::Operation(
-                Operation::GreaterEqual(new_term_operation(expression, tokens)?),
-            ),
+            Some(next_token) if next_token.token_type == TokenType::Minus => {
+                tokens.next();
+                Expression::Operation(Operation::Minus(new_term_operation(expression, tokens)?))
+            }
             _ => break,
         }
     }

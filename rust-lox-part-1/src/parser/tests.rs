@@ -1,9 +1,13 @@
 #![cfg(test)]
 
 use crate::{
-    parser::ParsingResult,
+    parser::{comparison, equality, term, ParsingResult},
+    scanner::scan_tokens,
     tokens::{Token, TokenType},
-    tree::expression::{Expression, ExpressionLiteral, FactorOperation, Operation, UnaryOperation},
+    tree::expression::{
+        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
+        Operation, TermOperation, UnaryOperation,
+    },
 };
 
 use super::{factor, primary, unary, TokenIter};
@@ -159,37 +163,9 @@ fn test_factor_parse_simple_multiplication() {
 
 #[test]
 fn test_factor_parse_multiple_multiplication() {
-    let tokens_vec = vec![
-        Token {
-            token_type: TokenType::Number(10.0),
-            lexeme: "".to_string(),
-            line_number: 1,
-        },
-        Token {
-            token_type: TokenType::Star,
-            lexeme: "".to_string(),
-            line_number: 1,
-        },
-        Token {
-            token_type: TokenType::Number(4.0),
-            lexeme: "".to_string(),
-            line_number: 1,
-        },
-        Token {
-            token_type: TokenType::Star,
-            lexeme: "".to_string(),
-            line_number: 1,
-        },
-        Token {
-            token_type: TokenType::Number(3.0),
-            lexeme: "".to_string(),
-            line_number: 1,
-        },
-    ];
+    let tokens = scan_tokens("10 * 4 * 3".to_string()).unwrap();
 
-    let mut tokens: TokenIter = tokens_vec.iter().peekable();
-
-    let result: ParsingResult = factor(&mut tokens);
+    let result: ParsingResult = factor(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,
@@ -204,5 +180,119 @@ fn test_factor_parse_multiple_multiplication() {
                 )))),
             }
         )))
+    );
+}
+
+#[test]
+fn test_term_parse_simple_addition() {
+    let tokens = scan_tokens("10 + 4".to_string()).unwrap();
+
+    let result: ParsingResult = term(&mut tokens.iter().peekable());
+
+    assert_eq!(
+        result,
+        Ok(Expression::Operation(Operation::Plus(TermOperation {
+            left: (Box::new(Expression::Literal(ExpressionLiteral::Number(10.0)))),
+            right: (Box::new(Expression::Literal(ExpressionLiteral::Number(4.0)))),
+        })))
+    );
+}
+
+#[test]
+fn test_term_parse_nested_addition() {
+    let tokens = scan_tokens("10 * 4 + 3".to_string()).unwrap();
+
+    let result: ParsingResult = term(&mut tokens.iter().peekable());
+
+    assert_eq!(
+        result,
+        Ok(Expression::Operation(Operation::Plus(TermOperation {
+            left: (Box::new(Expression::Operation(Operation::Multiply(
+                FactorOperation {
+                    left: Box::new(Expression::Literal(ExpressionLiteral::Number(10.0))),
+                    right: (Box::new(Expression::Literal(ExpressionLiteral::Number(4.0)))),
+                }
+            )))),
+            right: (Box::new(Expression::Literal(ExpressionLiteral::Number(3.0)))),
+        })))
+    );
+}
+
+#[test]
+fn test_comparison_parse_nested_comparison() {
+    let tokens = scan_tokens("5 > 4 > 3 + 2".to_string()).unwrap();
+
+    let result: ParsingResult = comparison(&mut tokens.iter().peekable());
+
+    assert_eq!(
+        result,
+        Ok(Expression::Operation(Operation::Greater(
+            ComparisonOperation {
+                left: (Box::new(Expression::Literal(ExpressionLiteral::Number(5.0)))),
+                right: (Box::new(Expression::Operation(Operation::Greater(
+                    ComparisonOperation {
+                        left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                        right: Box::new(Expression::Operation(Operation::Plus(TermOperation {
+                            left: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                            right: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0)))
+                        })))
+                    }
+                )))),
+            }
+        )))
+    );
+}
+
+#[test]
+fn test_equality_parse_simple_equality() {
+    let tokens = scan_tokens("true == false".to_string()).unwrap();
+
+    let result: ParsingResult = equality(&mut tokens.iter().peekable());
+
+    assert_eq!(
+        result,
+        Ok(Expression::Operation(Operation::Equal(EqualityOperation {
+            left: (Box::new(Expression::Literal(ExpressionLiteral::True))),
+            right: (Box::new(Expression::Literal(ExpressionLiteral::False))),
+        })))
+    );
+}
+
+#[test]
+fn test_equality_parse_nested_equality() {
+    let tokens = scan_tokens("4 * 3 > 4 + 3 == 2 / 4 < 3 / 4".to_string()).unwrap();
+
+    let result: ParsingResult = equality(&mut tokens.iter().peekable());
+
+    assert_eq!(
+        result,
+        Ok(Expression::Operation(Operation::Equal(EqualityOperation {
+            left: Box::new(Expression::Operation(Operation::Greater(
+                ComparisonOperation {
+                    left: Box::new(Expression::Operation(Operation::Multiply(
+                        FactorOperation {
+                            left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                            right: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                        },
+                    ))),
+                    right: Box::new(Expression::Operation(Operation::Plus(TermOperation {
+                        left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                        right: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                    }))),
+                }
+            ))),
+            right: Box::new(Expression::Operation(Operation::Less(
+                ComparisonOperation {
+                    left: Box::new(Expression::Operation(Operation::Divide(FactorOperation {
+                        left: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0))),
+                        right: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                    }))),
+                    right: Box::new(Expression::Operation(Operation::Divide(FactorOperation {
+                        left: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                        right: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                    }))),
+                }
+            )))
+        })))
     );
 }
