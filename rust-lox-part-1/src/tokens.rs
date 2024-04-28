@@ -35,27 +35,27 @@ impl Display for Token {
 impl TokenType {
     pub fn from_literal(literal: &String) -> Option<TokenType> {
         // TODO: Stop this HashMap from being built every time we run TokenType
-        let mut literal_lookup: HashMap<&str, TokenType> = HashMap::new();
+        let mut keyword_lookup: HashMap<&str, TokenType> = HashMap::new();
 
-        literal_lookup.insert("class", TokenType::Class);
-        literal_lookup.insert("else", TokenType::Else);
-        literal_lookup.insert("false", TokenType::False);
-        literal_lookup.insert("fun", TokenType::Fun);
-        literal_lookup.insert("for", TokenType::For);
-        literal_lookup.insert("if", TokenType::If);
-        literal_lookup.insert("nil", TokenType::Nil);
-        literal_lookup.insert("or", TokenType::Or);
-        literal_lookup.insert("and", TokenType::And);
-        literal_lookup.insert("print", TokenType::Print);
-        literal_lookup.insert("return", TokenType::Return);
-        literal_lookup.insert("super", TokenType::Super);
-        literal_lookup.insert("this", TokenType::This);
-        literal_lookup.insert("true", TokenType::True);
-        literal_lookup.insert("var", TokenType::Var);
-        literal_lookup.insert("while", TokenType::While);
-        literal_lookup.insert("and", TokenType::And);
+        keyword_lookup.insert("class", TokenType::Class);
+        keyword_lookup.insert("else", TokenType::Else);
+        keyword_lookup.insert("false", TokenType::False);
+        keyword_lookup.insert("fun", TokenType::Fun);
+        keyword_lookup.insert("for", TokenType::For);
+        keyword_lookup.insert("if", TokenType::If);
+        keyword_lookup.insert("nil", TokenType::Nil);
+        keyword_lookup.insert("or", TokenType::Or);
+        keyword_lookup.insert("and", TokenType::And);
+        keyword_lookup.insert("print", TokenType::Print);
+        keyword_lookup.insert("return", TokenType::Return);
+        keyword_lookup.insert("super", TokenType::Super);
+        keyword_lookup.insert("this", TokenType::This);
+        keyword_lookup.insert("true", TokenType::True);
+        keyword_lookup.insert("var", TokenType::Var);
+        keyword_lookup.insert("while", TokenType::While);
+        keyword_lookup.insert("and", TokenType::And);
 
-        return literal_lookup
+        return keyword_lookup
             .get(literal.as_str())
             .map(|token| token.clone());
     }
@@ -70,8 +70,8 @@ pub enum TokenType {
     RightBrace,
     Comma,
     Dot,
-    Mins,
     Plus,
+    Minus,
     Semicolon,
     Slash,
     Star,

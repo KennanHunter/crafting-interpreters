@@ -76,7 +76,7 @@ fn scan_token(
         '}' => Some(TokenType::RightBrace),
         ',' => Some(TokenType::Comma),
         '.' => Some(TokenType::Dot),
-        '-' => Some(TokenType::Mins),
+        '-' => Some(TokenType::Minus),
         '+' => Some(TokenType::Plus),
         ';' => Some(TokenType::Semicolon),
         '*' => Some(TokenType::Star),
