@@ -51,5 +51,5 @@ fn run(source: String) {
 
     let syntax_tree = parse_tokens(tokens);
 
-    println!("{:#?}", syntax_tree)
+    println!("{}", syntax_tree.unwrap())
 }

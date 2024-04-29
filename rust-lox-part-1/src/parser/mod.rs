@@ -13,23 +13,16 @@ type ParsingResult = Result<Expression, ParsingError>;
 pub fn parse_tokens(tokens_vec: Vec<Token>) -> ParsingResult {
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
-    loop {
-        let token = match tokens.peek() {
-            Some(token) => *token,
-            None => break,
-        };
+    let token = tokens.peek();
 
-        if token.token_type == TokenType::EOF {
-            break;
-        }
-
-        expression(&mut tokens)?;
+    if token.unwrap().token_type == TokenType::EOF {
+        return Err(ParsingError {
+            line_number: 0,
+            message: "EOF found at beginning of file".to_string(),
+        });
     }
 
-    Err(ParsingError {
-        line_number: 0,
-        message: "".to_string(),
-    })
+    return expression(&mut tokens);
 }
 
 fn expression(tokens: &mut TokenIter) -> ParsingResult {
@@ -226,11 +219,7 @@ fn primary(tokens: &mut TokenIter) -> ParsingResult {
 
         unrecognized_type => Err(ParsingError {
             line_number: token.line_number,
-            message: format!(
-                "Unrecognized token: {:?} made it to primary",
-                *unrecognized_type
-            )
-            .to_string(),
+            message: format!("Unrecognized token: \"{:?}\"", *unrecognized_type).to_string(),
         }),
     }
 }
