@@ -210,22 +210,6 @@ fn primary(tokens: &mut TokenIter) -> ParsingResult {
 
         TokenType::Number(number) => Ok(Expression::Literal(ExpressionLiteral::Number(*number))),
 
-        // TokenType::LeftParen => {
-        //     // TODO: Find better way of creating a valid type parameter for expression
-        // let mut grouped_tokens: Vec<Token> = Vec::new();
-
-        // tokens
-        //     .take_while(|token| token.token_type != TokenType::RightParen)
-        //     .cloned()
-        //     .collect_into(&mut grouped_tokens);
-
-        // // Consume the trailing right parenthesis
-        // tokens.next();
-
-        // let expr = expression(&mut grouped_tokens.iter().peekable())?;
-
-        // Ok(Expression::Grouping(Box::from(expr)))
-        // }
         TokenType::LeftParen => {
             let expr = expression(tokens)?;
 
