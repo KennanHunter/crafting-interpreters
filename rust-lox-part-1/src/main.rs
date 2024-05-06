@@ -2,6 +2,7 @@
 #![feature(iter_collect_into)]
 
 pub mod errors;
+pub mod interpreter;
 pub mod parser;
 pub mod scanner;
 pub mod tokens;
@@ -12,6 +13,8 @@ use std::{env, fs};
 use parser::parse_tokens;
 use scanner::scan_tokens;
 
+use crate::interpreter::interpret_tree;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -20,7 +23,7 @@ fn main() {
         2 => {
             let file_name = args.get(1).unwrap();
 
-            println!("Target file: {:?}", file_name);
+            println!("Target file: {}", file_name);
 
             Ok(file_name.as_str())
         }
@@ -49,7 +52,9 @@ fn run_file(file_name: &str) -> String {
 fn run(source: String) {
     let tokens = scan_tokens(source).unwrap();
 
-    let syntax_tree = parse_tokens(tokens);
+    let syntax_tree = parse_tokens(tokens).unwrap();
 
-    println!("{}", syntax_tree.unwrap())
+    println!("{}", syntax_tree);
+
+    let _ = interpret_tree(syntax_tree);
 }
