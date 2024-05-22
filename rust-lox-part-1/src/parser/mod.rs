@@ -33,29 +33,35 @@ fn equality(tokens: &mut TokenIter) -> ParsingResult {
     let mut expression = comparison(tokens)?;
 
     let new_equality_operation = |expression: Expression,
+                                  line_number: usize,
                                   tokens: &mut TokenIter|
      -> Result<EqualityOperation, ParsingError> {
         Ok(EqualityOperation {
             left: Box::new(expression),
             right: Box::new(equality(tokens)?),
+            line_number,
         })
     };
 
     loop {
         // Look at the next token, if it is a equality
         match tokens.peek() {
-            Some(next_token) if next_token.token_type == TokenType::BangEqual => {
+            Some(&next_token) if next_token.token_type == TokenType::BangEqual => {
                 tokens.next();
 
                 expression = Expression::Operation(Operation::NotEqual(new_equality_operation(
-                    expression, tokens,
+                    expression,
+                    next_token.line_number,
+                    tokens,
                 )?))
             }
 
-            Some(next_token) if next_token.token_type == TokenType::EqualEqual => {
+            Some(&next_token) if next_token.token_type == TokenType::EqualEqual => {
                 tokens.next();
                 expression = Expression::Operation(Operation::Equal(new_equality_operation(
-                    expression, tokens,
+                    expression,
+                    next_token.line_number,
+                    tokens,
                 )?))
             }
             _ => break,
@@ -69,46 +75,56 @@ fn comparison(tokens: &mut TokenIter) -> ParsingResult {
     let mut expression = term(tokens)?;
 
     let new_comparison_operation = |expression: Expression,
+                                    line_number: usize,
                                     tokens: &mut TokenIter|
      -> Result<ComparisonOperation, ParsingError> {
         Ok(ComparisonOperation {
             left: Box::new(expression),
             right: Box::new(comparison(tokens)?),
+            line_number,
         })
     };
 
     loop {
         // Look at the next token, if it is a equality
         expression = match tokens.peek() {
-            Some(next_token) if next_token.token_type == TokenType::Greater => {
+            Some(&next_token) if next_token.token_type == TokenType::Greater => {
                 tokens.next();
 
                 Expression::Operation(Operation::Greater(new_comparison_operation(
-                    expression, tokens,
+                    expression,
+                    next_token.line_number,
+                    tokens,
                 )?))
             }
 
-            Some(next_token) if next_token.token_type == TokenType::GreaterEqual => {
+            Some(&next_token) if next_token.token_type == TokenType::GreaterEqual => {
                 tokens.next();
 
                 Expression::Operation(Operation::GreaterEqual(new_comparison_operation(
-                    expression, tokens,
+                    expression,
+                    next_token.line_number,
+                    tokens,
                 )?))
             }
 
-            Some(next_token) if next_token.token_type == TokenType::Less => {
+            Some(&next_token) if next_token.token_type == TokenType::Less => {
                 tokens.next();
 
                 Expression::Operation(Operation::Less(new_comparison_operation(
-                    expression, tokens,
+                    expression,
+                    next_token.line_number,
+                    tokens,
                 )?))
             }
 
-            Some(next_token) if next_token.token_type == TokenType::LessEqual => {
+            Some(&next_token) if next_token.token_type == TokenType::LessEqual => {
                 tokens.next();
 
                 Expression::Operation(Operation::LessEqual(new_comparison_operation(
-                    expression, tokens,
+                    expression,
+                    next_token.line_number,
+                    tokens,
                 )?))
             }
 
@@ -122,24 +138,35 @@ fn comparison(tokens: &mut TokenIter) -> ParsingResult {
 fn term(tokens: &mut TokenIter) -> ParsingResult {
     let mut expression = factor(tokens)?;
 
-    let new_term_operation =
-        |expression: Expression, tokens: &mut TokenIter| -> Result<TermOperation, ParsingError> {
-            Ok(TermOperation {
-                left: Box::new(expression),
-                right: Box::new(term(tokens)?),
-            })
-        };
+    let new_term_operation = |expression: Expression,
+                              line_number,
+                              tokens: &mut TokenIter|
+     -> Result<TermOperation, ParsingError> {
+        Ok(TermOperation {
+            left: Box::new(expression),
+            right: Box::new(term(tokens)?),
+            line_number,
+        })
+    };
 
     loop {
         // Look at the next token, if it is a equality
         expression = match tokens.peek() {
-            Some(next_token) if next_token.token_type == TokenType::Plus => {
+            Some(&next_token) if next_token.token_type == TokenType::Plus => {
                 tokens.next();
-                Expression::Operation(Operation::Plus(new_term_operation(expression, tokens)?))
+                Expression::Operation(Operation::Plus(new_term_operation(
+                    expression,
+                    next_token.line_number,
+                    tokens,
+                )?))
             }
-            Some(next_token) if next_token.token_type == TokenType::Minus => {
+            Some(&next_token) if next_token.token_type == TokenType::Minus => {
                 tokens.next();
-                Expression::Operation(Operation::Minus(new_term_operation(expression, tokens)?))
+                Expression::Operation(Operation::Minus(new_term_operation(
+                    expression,
+                    next_token.line_number,
+                    tokens,
+                )?))
             }
             _ => break,
         }
@@ -156,6 +183,7 @@ fn factor(tokens: &mut TokenIter) -> ParsingResult {
             Ok(FactorOperation {
                 left: Box::new(expression),
                 right: Box::new(factor(tokens)?),
+                line_number: 0,
             })
         };
 
@@ -179,11 +207,12 @@ fn factor(tokens: &mut TokenIter) -> ParsingResult {
 
 fn unary(tokens: &mut TokenIter) -> ParsingResult {
     match tokens.peek() {
-        Some(next_token) if next_token.token_type == TokenType::Bang => {
+        Some(&next_token) if next_token.token_type == TokenType::Bang => {
             tokens.next();
 
             Ok(Expression::Operation(Operation::Not(UnaryOperation {
                 operand: Box::new(unary(tokens)?),
+                line_number: next_token.line_number,
             })))
         }
         _ => Ok(primary(tokens)?),
