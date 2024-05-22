@@ -195,6 +195,7 @@ mod tests {
                 10020030.3456,
             ))),
             right: Box::from(Expression::Literal(ExpressionLiteral::Number(5.2))),
+            line_number: 0,
         }));
 
         assert_eq!(expression.to_string(), "( + 10020030.35 5.20 )");
@@ -213,16 +214,24 @@ mod tests {
                         operand: Box::new(Expression::Literal(ExpressionLiteral::Number(
                             120341.2332,
                         ))),
+                        line_number: 1,
                     }))),
+                    line_number: 1,
                 }))),
+
+                line_number: 0,
             }))),
 
             right: Box::new(Expression::Operation(Operation::Equal(EqualityOperation {
                 left: Box::new(Expression::Literal(ExpressionLiteral::True)),
                 right: Box::new(Expression::Operation(Operation::Negate(UnaryOperation {
                     operand: Box::new(Expression::Literal(ExpressionLiteral::Number(120341.2332))),
+                    line_number: 0,
                 }))),
+                line_number: 0,
             }))),
+
+            line_number: 0,
         }));
 
         assert_eq!(

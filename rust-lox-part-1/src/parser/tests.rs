@@ -88,6 +88,7 @@ fn test_unary_parse_simple_bang() {
         result,
         Ok(Expression::Operation(Operation::Not(UnaryOperation {
             operand: (Box::new(Expression::Literal(ExpressionLiteral::True))),
+            line_number: 1
         })))
     );
 }
@@ -121,7 +122,9 @@ fn test_unary_parse_multiple_bang() {
         Ok(Expression::Operation(Operation::Not(UnaryOperation {
             operand: Box::new(Expression::Operation(Operation::Not(UnaryOperation {
                 operand: (Box::new(Expression::Literal(ExpressionLiteral::True))),
-            })))
+                line_number: 1
+            }))),
+            line_number: 1
         })))
     );
 }
@@ -156,6 +159,7 @@ fn test_factor_parse_simple_multiplication() {
             FactorOperation {
                 left: (Box::new(Expression::Literal(ExpressionLiteral::Number(10.0)))),
                 right: (Box::new(Expression::Literal(ExpressionLiteral::Number(4.0)))),
+                line_number: 1
             }
         )))
     );
@@ -176,8 +180,10 @@ fn test_factor_parse_multiple_multiplication() {
                     FactorOperation {
                         left: (Box::new(Expression::Literal(ExpressionLiteral::Number(4.0)))),
                         right: (Box::new(Expression::Literal(ExpressionLiteral::Number(3.0)))),
+                        line_number: 1
                     }
                 )))),
+                line_number: 1
             }
         )))
     );
@@ -194,6 +200,7 @@ fn test_term_parse_simple_addition() {
         Ok(Expression::Operation(Operation::Plus(TermOperation {
             left: (Box::new(Expression::Literal(ExpressionLiteral::Number(10.0)))),
             right: (Box::new(Expression::Literal(ExpressionLiteral::Number(4.0)))),
+            line_number: 1
         })))
     );
 }
@@ -211,9 +218,11 @@ fn test_term_parse_nested_addition() {
                 FactorOperation {
                     left: Box::new(Expression::Literal(ExpressionLiteral::Number(10.0))),
                     right: (Box::new(Expression::Literal(ExpressionLiteral::Number(4.0)))),
+                    line_number: 1
                 }
             )))),
             right: (Box::new(Expression::Literal(ExpressionLiteral::Number(3.0)))),
+            line_number: 1
         })))
     );
 }
@@ -234,10 +243,13 @@ fn test_comparison_parse_nested_comparison() {
                         left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
                         right: Box::new(Expression::Operation(Operation::Plus(TermOperation {
                             left: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
-                            right: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0)))
-                        })))
+                            right: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0))),
+                            line_number: 1
+                        }))),
+                        line_number: 1
                     }
                 )))),
+                line_number: 1
             }
         )))
     );
@@ -254,6 +266,7 @@ fn test_equality_parse_simple_equality() {
         Ok(Expression::Operation(Operation::Equal(EqualityOperation {
             left: (Box::new(Expression::Literal(ExpressionLiteral::True))),
             right: (Box::new(Expression::Literal(ExpressionLiteral::False))),
+            line_number: 1
         })))
     );
 }
@@ -273,12 +286,15 @@ fn test_equality_parse_nested_equality() {
                         FactorOperation {
                             left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
                             right: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                            line_number: 1
                         },
                     ))),
                     right: Box::new(Expression::Operation(Operation::Plus(TermOperation {
                         left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
                         right: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                        line_number: 1
                     }))),
+                    line_number: 1
                 }
             ))),
             right: Box::new(Expression::Operation(Operation::Less(
@@ -286,13 +302,17 @@ fn test_equality_parse_nested_equality() {
                     left: Box::new(Expression::Operation(Operation::Divide(FactorOperation {
                         left: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0))),
                         right: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                        line_number: 1
                     }))),
                     right: Box::new(Expression::Operation(Operation::Divide(FactorOperation {
                         left: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
                         right: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
+                        line_number: 1
                     }))),
+                    line_number: 1
                 }
-            )))
+            ))),
+            line_number: 1
         })))
     );
 }
@@ -311,9 +331,11 @@ fn test_expression_parse_grouped_expression() {
                     Operation::Plus(TermOperation {
                         left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
                         right: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
+                        line_number: 0
                     })
                 )))),
-                right: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0)))
+                right: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0))),
+                line_number: 0
             }
         )))
     );
