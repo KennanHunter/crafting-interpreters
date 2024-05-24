@@ -112,22 +112,86 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(ExpressionLiteral::Number(left_number + right_number)),
+                    (
+                        ExpressionLiteral::String(left_string),
+                        ExpressionLiteral::String(right_string),
+                    ) => Ok(ExpressionLiteral::String(
+                        left_string.to_owned() + right_string,
+                    )),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot add types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
             Operation::Minus(TermOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(ExpressionLiteral::Number(left_number - right_number)),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot subtract types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
             Operation::Multiply(FactorOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(ExpressionLiteral::Number(left_number * right_number)),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot multiply types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
             Operation::Divide(FactorOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                // TODO: Handle divide by zero behavior
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(ExpressionLiteral::Number(left_number / right_number)),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot divide types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
         },
     };
 
