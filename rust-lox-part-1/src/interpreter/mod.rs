@@ -1,3 +1,5 @@
+mod tests;
+
 use crate::{
     errors::RuntimeError,
     tree::expression::{
@@ -6,48 +8,86 @@ use crate::{
     },
 };
 
-pub fn interpret_tree(tree: Expression) -> Result<RuntimeLiteral, RuntimeError> {
-    let literal = match tree {
+pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeError> {
+    let literal: Result<ExpressionLiteral, RuntimeError> = match tree {
         Expression::Grouping(grouped_expression) => interpret_tree(*grouped_expression),
-        Expression::Literal(literal) => match literal {
-            ExpressionLiteral::Number(number) => todo!(),
-            ExpressionLiteral::String(str) => todo!(),
-            ExpressionLiteral::True => todo!(),
-            ExpressionLiteral::False => todo!(),
-            ExpressionLiteral::Nil => todo!(),
-        },
+        Expression::Literal(literal) => Ok(literal),
         Expression::Operation(operation) => match operation {
             Operation::Negate(UnaryOperation {
                 operand,
                 line_number,
             }) => match *operand {
                 Expression::Literal(literal) => match literal {
-                    ExpressionLiteral::Number(_) => todo!(),
+                    ExpressionLiteral::Number(number) => Ok(ExpressionLiteral::Number(-number)),
                     ExpressionLiteral::Nil => Err(RuntimeError {
                         line_number,
                         message: "Tried to Negate Nil value".to_string(),
                     }),
                     literal => Err(RuntimeError {
                         line_number,
-                        message: format!("Tried to Negate invalid literal: {}", literal),
+                        message: format!("Tried to Negate invalid literal: {literal}"),
                     }),
                 },
-                _ => 
+                expression => interpret_tree(expression),
             },
             Operation::Not(UnaryOperation {
                 operand,
-                line_number,
-            }) => todo!(),
+                line_number: _,
+            }) => {
+                if is_truthy(*operand)? {
+                    Ok(ExpressionLiteral::False)
+                } else {
+                    Ok(ExpressionLiteral::True)
+                }
+            }
             Operation::Equal(EqualityOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                if !left_parsed.is_same_type(&right_parsed) {
+                    return Err(RuntimeError {
+                        message: format!(
+                            "Tried to compare invalid types to each other: {} and {}",
+                            left_parsed, right_parsed
+                        ),
+                        line_number,
+                    });
+                }
+
+                if left_parsed == right_parsed {
+                    Ok(ExpressionLiteral::True)
+                } else {
+                    Ok(ExpressionLiteral::False)
+                }
+            }
             Operation::NotEqual(EqualityOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                if !left_parsed.is_same_type(&right_parsed) {
+                    return Err(RuntimeError {
+                        message: format!(
+                            "Tried to compare invalid types to each other: {} and {}",
+                            left_parsed, right_parsed
+                        ),
+                        line_number,
+                    });
+                }
+
+                if left_parsed != right_parsed {
+                    Ok(ExpressionLiteral::True)
+                } else {
+                    Ok(ExpressionLiteral::False)
+                }
+            }
             Operation::Less(ComparisonOperation {
                 left,
                 right,
@@ -91,24 +131,18 @@ pub fn interpret_tree(tree: Expression) -> Result<RuntimeLiteral, RuntimeError> 
         },
     };
 
-    return Ok(literal);
+    return Ok(literal?);
 }
 
-pub fn is_truthy(literal: ExpressionLiteral) -> bool {
-    match literal {
-        ExpressionLiteral::Number(number) => number != 0.0,
-        ExpressionLiteral::String(str) => str.len() > 0,
-        ExpressionLiteral::True => true,
-        ExpressionLiteral::False => false,
-        ExpressionLiteral::Nil => false,
+pub fn is_truthy(expr: Expression) -> Result<bool, RuntimeError> {
+    match expr {
+        Expression::Literal(literal) => match literal {
+            ExpressionLiteral::Number(number) => Ok(number != 0.0),
+            ExpressionLiteral::String(str) => Ok(str.len() > 0),
+            ExpressionLiteral::True => Ok(true),
+            ExpressionLiteral::False => Ok(false),
+            ExpressionLiteral::Nil => Ok(false),
+        },
+        tree => is_truthy(Expression::Literal(interpret_tree(tree)?)),
     }
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum RuntimeLiteral {
-    Number(f64),
-    String(String),
-    True,
-    False,
-    Nil,
 }

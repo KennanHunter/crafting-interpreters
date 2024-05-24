@@ -17,6 +17,30 @@ pub enum ExpressionLiteral {
     Nil,
 }
 
+impl ExpressionLiteral {
+    pub fn is_same_type(&self, other: &ExpressionLiteral) -> bool {
+        match self {
+            ExpressionLiteral::Number(_) => match other {
+                ExpressionLiteral::Number(_) => true,
+                _ => false,
+            },
+            ExpressionLiteral::String(_) => match other {
+                ExpressionLiteral::String(_) => true,
+                _ => false,
+            },
+            ExpressionLiteral::True | ExpressionLiteral::False => {
+                *other == ExpressionLiteral::True || *other == ExpressionLiteral::False
+            }
+            ExpressionLiteral::Nil => match other {
+                ExpressionLiteral::Nil => true,
+                _ => false,
+            },
+        }
+    }
+
+
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct EqualityOperation {
     pub left: Box<Expression>,

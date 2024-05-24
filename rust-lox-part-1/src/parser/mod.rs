@@ -178,25 +178,35 @@ fn term(tokens: &mut TokenIter) -> ParsingResult {
 fn factor(tokens: &mut TokenIter) -> ParsingResult {
     let mut expression = unary(tokens)?;
 
-    let new_term_operation =
-        |expression: Expression, tokens: &mut TokenIter| -> Result<FactorOperation, ParsingError> {
-            Ok(FactorOperation {
-                left: Box::new(expression),
-                right: Box::new(factor(tokens)?),
-                line_number: 0,
-            })
-        };
+    let new_factor_operation = |expression: Expression,
+                                line_number: usize,
+                                tokens: &mut TokenIter|
+     -> Result<FactorOperation, ParsingError> {
+        Ok(FactorOperation {
+            left: Box::new(expression),
+            right: Box::new(factor(tokens)?),
+            line_number, // TODO:
+        })
+    };
 
     loop {
         // Look at the next token, if it is a equality
         expression = match tokens.peek() {
-            Some(next_token) if next_token.token_type == TokenType::Star => {
+            Some(&next_token) if next_token.token_type == TokenType::Star => {
                 tokens.next();
-                Expression::Operation(Operation::Multiply(new_term_operation(expression, tokens)?))
+                Expression::Operation(Operation::Multiply(new_factor_operation(
+                    expression,
+                    next_token.line_number,
+                    tokens,
+                )?))
             }
-            Some(next_token) if next_token.token_type == TokenType::Slash => {
+            Some(&next_token) if next_token.token_type == TokenType::Slash => {
                 tokens.next();
-                Expression::Operation(Operation::Divide(new_term_operation(expression, tokens)?))
+                Expression::Operation(Operation::Divide(new_factor_operation(
+                    expression,
+                    next_token.line_number,
+                    tokens,
+                )?))
             }
             _ => break,
         };

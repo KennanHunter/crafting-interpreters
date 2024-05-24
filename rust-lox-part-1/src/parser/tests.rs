@@ -331,11 +331,11 @@ fn test_expression_parse_grouped_expression() {
                     Operation::Plus(TermOperation {
                         left: Box::new(Expression::Literal(ExpressionLiteral::Number(4.0))),
                         right: Box::new(Expression::Literal(ExpressionLiteral::Number(3.0))),
-                        line_number: 0
+                        line_number: 1
                     })
                 )))),
                 right: Box::new(Expression::Literal(ExpressionLiteral::Number(2.0))),
-                line_number: 0
+                line_number: 1
             }
         )))
     );
