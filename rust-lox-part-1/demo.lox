@@ -1,2 +1,1 @@
-var language = "lox";
-print "this is a example of lox as parsed by my rust interpreter"
+68999 + 1 == (6 * 10 + 9) * 1000

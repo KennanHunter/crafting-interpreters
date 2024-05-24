@@ -56,5 +56,7 @@ fn run(source: String) {
 
     println!("{}", syntax_tree);
 
-    let _ = interpret_tree(syntax_tree);
+    let output_literal = interpret_tree(syntax_tree).unwrap();
+
+    println!("{:#?}", output_literal)
 }
