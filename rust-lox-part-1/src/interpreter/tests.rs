@@ -3,7 +3,8 @@
 use crate::{
     interpreter::is_truthy,
     tree::expression::{
-        EqualityOperation, Expression, ExpressionLiteral, FactorOperation, Operation, TermOperation,
+        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
+        Operation, TermOperation,
     },
 };
 
@@ -133,4 +134,123 @@ fn test_multiply_operation() {
     assert_eq!(result.unwrap(), ExpressionLiteral::Number(500.0))
 }
 
-// TODO: Test division
+#[test]
+fn test_less_operation() {
+    let expr: Expression = Expression::Operation(Operation::Less(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(5.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::False)
+}
+
+#[test]
+fn test_less_operation_when_equal() {
+    let expr: Expression = Expression::Operation(Operation::Less(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::False)
+}
+
+#[test]
+fn test_less_equal_operation() {
+    let expr: Expression = Expression::Operation(Operation::LessEqual(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(5.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::False)
+}
+
+#[test]
+fn test_less_equal_operation_when_equal() {
+    let expr: Expression = Expression::Operation(Operation::LessEqual(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::True)
+}
+
+//
+#[test]
+fn test_greater_operation() {
+    let expr: Expression = Expression::Operation(Operation::Greater(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(5.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::True)
+}
+
+#[test]
+fn test_greater_operation_when_equal() {
+    let expr: Expression = Expression::Operation(Operation::Greater(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::False)
+}
+
+#[test]
+fn test_greater_equal_operation() {
+    let expr: Expression = Expression::Operation(Operation::Greater(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(5.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::True)
+}
+
+#[test]
+fn test_greater_equal_operation_when_equal() {
+    let expr: Expression = Expression::Operation(Operation::LessEqual(ComparisonOperation {
+        left: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        right: Box::new(Expression::Literal(ExpressionLiteral::Number(100.0))),
+        line_number: 0,
+    }));
+
+    let result = interpret_tree(expr);
+
+    assert!(result.is_ok());
+
+    assert_eq!(result.unwrap(), ExpressionLiteral::True)
+}

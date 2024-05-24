@@ -92,22 +92,94 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(if left_number < right_number {
+                        ExpressionLiteral::True
+                    } else {
+                        ExpressionLiteral::False
+                    }),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot compare types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
             Operation::LessEqual(ComparisonOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(if left_number <= right_number {
+                        ExpressionLiteral::True
+                    } else {
+                        ExpressionLiteral::False
+                    }),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot compare types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
             Operation::Greater(ComparisonOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(if left_number > right_number {
+                        ExpressionLiteral::True
+                    } else {
+                        ExpressionLiteral::False
+                    }),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot compare types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
             Operation::GreaterEqual(ComparisonOperation {
                 left,
                 right,
                 line_number,
-            }) => todo!(),
+            }) => {
+                let left_parsed = interpret_tree(*left)?;
+                let right_parsed = interpret_tree(*right)?;
+
+                match (&left_parsed, &right_parsed) {
+                    (
+                        ExpressionLiteral::Number(left_number),
+                        ExpressionLiteral::Number(right_number),
+                    ) => Ok(if left_number >= right_number {
+                        ExpressionLiteral::True
+                    } else {
+                        ExpressionLiteral::False
+                    }),
+                    _ => Err(RuntimeError {
+                        message: format!("Cannot compare types {left_parsed} and {right_parsed}"),
+                        line_number,
+                    }),
+                }
+            }
             Operation::Plus(TermOperation {
                 left,
                 right,
