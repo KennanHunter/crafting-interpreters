@@ -1,3 +1,4 @@
+pub mod statements;
 pub mod tests;
 
 use crate::errors::ParsingError;
@@ -7,29 +8,39 @@ use crate::tree::expression::{
     Operation, TermOperation, UnaryOperation,
 };
 
+use self::statements::{print_statement, Statement};
+
 type TokenIter<'a> = std::iter::Peekable<std::slice::Iter<'a, Token>>;
-type ParsingResult = Result<Expression, ParsingError>;
+type ParsingResult = Result<ParsedBlock, ParsingError>;
+type ExpressionParsingResult = Result<Expression, ParsingError>;
+
+pub enum ParsedBlock {
+    Expression(Expression),
+    Statement(Statement),
+}
 
 pub fn parse_tokens(tokens_vec: Vec<Token>) -> ParsingResult {
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
     let token = tokens.peek();
 
-    if token.unwrap().token_type == TokenType::EOF {
-        return Err(ParsingError {
+    match token.unwrap().token_type {
+        TokenType::EOF => Err(ParsingError {
             line_number: 0,
             message: "EOF found at beginning of file".to_string(),
-        });
-    }
+        }),
 
-    return expression(&mut tokens);
+        TokenType::Print => print_statement(&mut tokens),
+
+        _ => Ok(ParsedBlock::Expression(expression(&mut tokens)?)),
+    }
 }
 
-fn expression(tokens: &mut TokenIter) -> ParsingResult {
+fn expression(tokens: &mut TokenIter) -> ExpressionParsingResult {
     equality(tokens)
 }
 
-fn equality(tokens: &mut TokenIter) -> ParsingResult {
+fn equality(tokens: &mut TokenIter) -> ExpressionParsingResult {
     let mut expression = comparison(tokens)?;
 
     let new_equality_operation = |expression: Expression,
@@ -71,7 +82,7 @@ fn equality(tokens: &mut TokenIter) -> ParsingResult {
     Ok(expression)
 }
 
-fn comparison(tokens: &mut TokenIter) -> ParsingResult {
+fn comparison(tokens: &mut TokenIter) -> ExpressionParsingResult {
     let mut expression = term(tokens)?;
 
     let new_comparison_operation = |expression: Expression,
@@ -135,7 +146,7 @@ fn comparison(tokens: &mut TokenIter) -> ParsingResult {
     Ok(expression)
 }
 
-fn term(tokens: &mut TokenIter) -> ParsingResult {
+fn term(tokens: &mut TokenIter) -> ExpressionParsingResult {
     let mut expression = factor(tokens)?;
 
     let new_term_operation = |expression: Expression,
@@ -175,7 +186,7 @@ fn term(tokens: &mut TokenIter) -> ParsingResult {
     Ok(expression)
 }
 
-fn factor(tokens: &mut TokenIter) -> ParsingResult {
+fn factor(tokens: &mut TokenIter) -> ExpressionParsingResult {
     let mut expression = unary(tokens)?;
 
     let new_factor_operation = |expression: Expression,
@@ -215,7 +226,7 @@ fn factor(tokens: &mut TokenIter) -> ParsingResult {
     Ok(expression)
 }
 
-fn unary(tokens: &mut TokenIter) -> ParsingResult {
+fn unary(tokens: &mut TokenIter) -> ExpressionParsingResult {
     match tokens.peek() {
         Some(&next_token) if next_token.token_type == TokenType::Bang => {
             tokens.next();
@@ -229,7 +240,7 @@ fn unary(tokens: &mut TokenIter) -> ParsingResult {
     }
 }
 
-fn primary(tokens: &mut TokenIter) -> ParsingResult {
+fn primary(tokens: &mut TokenIter) -> ExpressionParsingResult {
     let token = tokens.next().unwrap();
 
     match &token.token_type {

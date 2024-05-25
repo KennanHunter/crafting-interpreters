@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use crate::{
-    parser::{comparison, equality, expression, term, ParsingResult},
+    parser::{comparison, equality, expression, term, ExpressionParsingResult},
     scanner::scan_tokens,
     tokens::{Token, TokenType},
     tree::expression::{
@@ -57,7 +57,7 @@ fn test_primary_parse_number_token() {
 
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
-    let result: ParsingResult = primary(&mut tokens);
+    let result: ExpressionParsingResult = primary(&mut tokens);
 
     assert_eq!(
         result,
@@ -82,7 +82,7 @@ fn test_unary_parse_simple_bang() {
 
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
-    let result: ParsingResult = unary(&mut tokens);
+    let result: ExpressionParsingResult = unary(&mut tokens);
 
     assert_eq!(
         result,
@@ -115,7 +115,7 @@ fn test_unary_parse_multiple_bang() {
 
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
-    let result: ParsingResult = unary(&mut tokens);
+    let result: ExpressionParsingResult = unary(&mut tokens);
 
     assert_eq!(
         result,
@@ -151,7 +151,7 @@ fn test_factor_parse_simple_multiplication() {
 
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
-    let result: ParsingResult = factor(&mut tokens);
+    let result: ExpressionParsingResult = factor(&mut tokens);
 
     assert_eq!(
         result,
@@ -169,7 +169,7 @@ fn test_factor_parse_simple_multiplication() {
 fn test_factor_parse_multiple_multiplication() {
     let tokens = scan_tokens("10 * 4 * 3".to_string()).unwrap();
 
-    let result: ParsingResult = factor(&mut tokens.iter().peekable());
+    let result: ExpressionParsingResult = factor(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,
@@ -193,7 +193,7 @@ fn test_factor_parse_multiple_multiplication() {
 fn test_term_parse_simple_addition() {
     let tokens = scan_tokens("10 + 4".to_string()).unwrap();
 
-    let result: ParsingResult = term(&mut tokens.iter().peekable());
+    let result: ExpressionParsingResult = term(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,
@@ -209,7 +209,7 @@ fn test_term_parse_simple_addition() {
 fn test_term_parse_nested_addition() {
     let tokens = scan_tokens("10 * 4 + 3".to_string()).unwrap();
 
-    let result: ParsingResult = term(&mut tokens.iter().peekable());
+    let result: ExpressionParsingResult = term(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,
@@ -231,7 +231,7 @@ fn test_term_parse_nested_addition() {
 fn test_comparison_parse_nested_comparison() {
     let tokens = scan_tokens("5 > 4 > 3 + 2".to_string()).unwrap();
 
-    let result: ParsingResult = comparison(&mut tokens.iter().peekable());
+    let result: ExpressionParsingResult = comparison(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,
@@ -259,7 +259,7 @@ fn test_comparison_parse_nested_comparison() {
 fn test_equality_parse_simple_equality() {
     let tokens = scan_tokens("true == false".to_string()).unwrap();
 
-    let result: ParsingResult = equality(&mut tokens.iter().peekable());
+    let result: ExpressionParsingResult = equality(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,
@@ -275,7 +275,7 @@ fn test_equality_parse_simple_equality() {
 fn test_equality_parse_nested_equality() {
     let tokens = scan_tokens("4 * 3 > 4 + 3 == 2 / 4 < 3 / 4".to_string()).unwrap();
 
-    let result: ParsingResult = equality(&mut tokens.iter().peekable());
+    let result: ExpressionParsingResult = equality(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,
@@ -321,7 +321,7 @@ fn test_equality_parse_nested_equality() {
 fn test_expression_parse_grouped_expression() {
     let tokens = scan_tokens("(4 + 3) * 2".to_string()).unwrap();
 
-    let result: ParsingResult = expression(&mut tokens.iter().peekable());
+    let result: ExpressionParsingResult = expression(&mut tokens.iter().peekable());
 
     assert_eq!(
         result,

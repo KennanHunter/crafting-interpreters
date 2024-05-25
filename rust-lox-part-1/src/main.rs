@@ -49,14 +49,13 @@ fn run_file(file_name: &str) -> String {
 
 /// Core function that takes in the raw source code and does stuff
 ///
+// #[warn(unused_variables)]
 fn run(source: String) {
     let tokens = scan_tokens(source).unwrap();
 
     let syntax_tree = parse_tokens(tokens).unwrap();
 
-    println!("{}", syntax_tree);
+    // let _ = interpret_tree(syntax_tree).unwrap();
 
-    let output_literal = interpret_tree(syntax_tree).unwrap();
-
-    println!("{:#?}", output_literal)
+    // println!("{:#?}", output_literal)
 }
