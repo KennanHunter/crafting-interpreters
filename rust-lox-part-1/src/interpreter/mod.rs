@@ -2,15 +2,42 @@ mod tests;
 
 use crate::{
     errors::RuntimeError,
+    parser::{statements::Statement, ParsedBlock, ParsingResult},
     tree::expression::{
         ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
         Operation, TermOperation, UnaryOperation,
     },
 };
 
-pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeError> {
+// TODO: Test
+pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
+    for block in blocks {
+        match block.unwrap() {
+            ParsedBlock::Expression(expr) => {
+                interpret_expression_tree(expr)?;
+            }
+            ParsedBlock::Statement(statement) => {
+                interpret_statement(statement)?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub fn interpret_statement(statement: Statement) -> Result<(), RuntimeError> {
+    match statement {
+        Statement::Print(enclosed_expression) => {
+            println!("{}", interpret_expression_tree(enclosed_expression)?);
+        }
+    }
+
+    Ok(())
+}
+
+pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeError> {
     let literal: Result<ExpressionLiteral, RuntimeError> = match tree {
-        Expression::Grouping(grouped_expression) => interpret_tree(*grouped_expression),
+        Expression::Grouping(grouped_expression) => interpret_expression_tree(*grouped_expression),
         Expression::Literal(literal) => Ok(literal),
         Expression::Operation(operation) => match operation {
             Operation::Negate(UnaryOperation {
@@ -28,7 +55,7 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                         message: format!("Tried to Negate invalid literal: {literal}"),
                     }),
                 },
-                expression => interpret_tree(expression),
+                expression => interpret_expression_tree(expression),
             },
             Operation::Not(UnaryOperation {
                 operand,
@@ -45,8 +72,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 if !left_parsed.is_same_type(&right_parsed) {
                     return Err(RuntimeError {
@@ -69,8 +96,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 if !left_parsed.is_same_type(&right_parsed) {
                     return Err(RuntimeError {
@@ -93,8 +120,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -116,8 +143,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -139,8 +166,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -162,8 +189,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -185,8 +212,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -210,8 +237,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -229,8 +256,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -248,8 +275,8 @@ pub fn interpret_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeErro
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_tree(*left)?;
-                let right_parsed = interpret_tree(*right)?;
+                let left_parsed = interpret_expression_tree(*left)?;
+                let right_parsed = interpret_expression_tree(*right)?;
 
                 // TODO: Handle divide by zero behavior
 
@@ -279,6 +306,6 @@ pub fn is_truthy(expr: Expression) -> Result<bool, RuntimeError> {
             ExpressionLiteral::False => Ok(false),
             ExpressionLiteral::Nil => Ok(false),
         },
-        tree => is_truthy(Expression::Literal(interpret_tree(tree)?)),
+        tree => is_truthy(Expression::Literal(interpret_expression_tree(tree)?)),
     }
 }

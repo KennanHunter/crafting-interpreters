@@ -10,10 +10,11 @@ pub mod tree;
 
 use std::{env, fs};
 
-use parser::parse_tokens;
+use interpreter::interpret;
+use parser::{parse_block, parse_blocks, ParsingResult};
 use scanner::scan_tokens;
 
-use crate::interpreter::interpret_tree;
+use crate::interpreter::interpret_expression_tree;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -53,9 +54,13 @@ fn run_file(file_name: &str) -> String {
 fn run(source: String) {
     let tokens = scan_tokens(source).unwrap();
 
-    let syntax_tree = parse_tokens(tokens).unwrap();
+    let syntax_tree: Vec<ParsingResult> = parse_blocks(tokens);
 
-    // let _ = interpret_tree(syntax_tree).unwrap();
+    let parsing_has_error = syntax_tree.iter().any(|parsed_block| parsed_block.is_err());
 
-    // println!("{:#?}", output_literal)
+    if parsing_has_error {
+        return;
+    };
+
+    let _ = interpret(syntax_tree);
 }

@@ -10,8 +10,8 @@ use crate::tree::expression::{
 
 use self::statements::{print_statement, Statement};
 
+pub type ParsingResult = Result<ParsedBlock, ParsingError>;
 type TokenIter<'a> = std::iter::Peekable<std::slice::Iter<'a, Token>>;
-type ParsingResult = Result<ParsedBlock, ParsingError>;
 type ExpressionParsingResult = Result<Expression, ParsingError>;
 
 pub enum ParsedBlock {
@@ -19,9 +19,23 @@ pub enum ParsedBlock {
     Statement(Statement),
 }
 
-pub fn parse_tokens(tokens_vec: Vec<Token>) -> ParsingResult {
+pub fn parse_blocks(tokens_vec: Vec<Token>) -> Vec<ParsingResult> {
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
+    let mut return_vector: Vec<ParsingResult> = vec![];
+
+    loop {
+        return_vector.push(parse_block(&mut tokens));
+
+        if tokens.peek().is_none() {
+            break;
+        }
+    }
+
+    return return_vector;
+}
+
+pub fn parse_block(tokens: &mut TokenIter) -> ParsingResult {
     let token = tokens.peek();
 
     match token.unwrap().token_type {
@@ -30,9 +44,9 @@ pub fn parse_tokens(tokens_vec: Vec<Token>) -> ParsingResult {
             message: "EOF found at beginning of file".to_string(),
         }),
 
-        TokenType::Print => print_statement(&mut tokens),
+        TokenType::Print => print_statement(tokens),
 
-        _ => Ok(ParsedBlock::Expression(expression(&mut tokens)?)),
+        _ => Ok(ParsedBlock::Expression(expression(tokens)?)),
     }
 }
 

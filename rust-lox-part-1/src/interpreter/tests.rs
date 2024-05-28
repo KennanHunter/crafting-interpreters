@@ -8,7 +8,7 @@ use crate::{
     },
 };
 
-use super::interpret_tree;
+use super::interpret_expression_tree;
 
 #[test]
 fn test_equality_operation() {
@@ -18,7 +18,7 @@ fn test_equality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -33,7 +33,7 @@ fn test_inequality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -48,7 +48,7 @@ fn test_invalid_equality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_err());
 }
@@ -61,7 +61,7 @@ fn test_invalid_inequality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_err());
 }
@@ -112,7 +112,7 @@ fn test_plus_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -127,7 +127,7 @@ fn test_multiply_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -142,7 +142,7 @@ fn test_less_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -157,7 +157,7 @@ fn test_less_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -172,7 +172,7 @@ fn test_less_equal_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -187,7 +187,7 @@ fn test_less_equal_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -203,7 +203,7 @@ fn test_greater_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -218,7 +218,7 @@ fn test_greater_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -233,7 +233,7 @@ fn test_greater_equal_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
@@ -248,7 +248,7 @@ fn test_greater_equal_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_tree(expr);
+    let result = interpret_expression_tree(expr);
 
     assert!(result.is_ok());
 
