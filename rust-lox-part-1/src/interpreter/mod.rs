@@ -1,3 +1,4 @@
+mod statements;
 mod tests;
 
 use crate::{
@@ -8,6 +9,8 @@ use crate::{
         Operation, TermOperation, UnaryOperation,
     },
 };
+
+use self::statements::interpret_print;
 
 // TODO: Test
 pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
@@ -27,9 +30,7 @@ pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
 
 pub fn interpret_statement(statement: Statement) -> Result<(), RuntimeError> {
     match statement {
-        Statement::Print(enclosed_expression) => {
-            println!("{}", interpret_expression_tree(enclosed_expression)?);
-        }
+        Statement::Print(enclosed_expression) => interpret_print(enclosed_expression)?,
     }
 
     Ok(())
