@@ -216,9 +216,13 @@ fn scan_token(
         literal if literal.is_ascii_alphabetic() => {
             let mut contained_literal = String::from(literal);
 
-            characters
-                .take_while(|char| char.is_ascii_alphanumeric())
-                .for_each(|char| contained_literal.push(char));
+            while characters
+                .peek()
+                .is_some_and(|char| char.is_ascii_alphanumeric())
+            {
+                let char = characters.next().unwrap();
+                contained_literal.push(char);
+            }
 
             match TokenType::from_literal(&contained_literal) {
                 Some(keyword) => Some(keyword),

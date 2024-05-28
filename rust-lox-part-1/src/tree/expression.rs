@@ -106,9 +106,9 @@ impl Display for ExpressionLiteral {
         match self {
             ExpressionLiteral::Number(number) => write!(f, "{:.2}", number),
             ExpressionLiteral::String(string_literal) => write!(f, "\"{}\"", string_literal),
-            ExpressionLiteral::True => write!(f, "( true )"),
-            ExpressionLiteral::False => write!(f, "( false )"),
-            ExpressionLiteral::Nil => write!(f, "( nil )"),
+            ExpressionLiteral::True => write!(f, "true"),
+            ExpressionLiteral::False => write!(f, "false"),
+            ExpressionLiteral::Nil => write!(f, "nil"),
         }
     }
 }
