@@ -31,6 +31,7 @@ pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
 pub fn interpret_statement(statement: Statement) -> Result<(), RuntimeError> {
     match statement {
         Statement::Print(enclosed_expression) => interpret_print(enclosed_expression)?,
+        Statement::Variable(_, _) => todo!(),
     }
 
     Ok(())

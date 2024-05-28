@@ -1,6 +1,8 @@
 pub mod statements;
 pub mod tests;
 
+use statements::variable_statement;
+
 use crate::errors::ParsingError;
 use crate::tokens::{Token, TokenType};
 use crate::tree::expression::{
@@ -26,7 +28,7 @@ pub fn parse_blocks(tokens_vec: Vec<Token>) -> Vec<ParsingResult> {
     let mut return_vector: Vec<ParsingResult> = vec![];
 
     loop {
-        return_vector.push(parse_block(&mut tokens));
+        return_vector.push(declaration(&mut tokens));
 
         let token = tokens.peek();
 
@@ -38,15 +40,19 @@ pub fn parse_blocks(tokens_vec: Vec<Token>) -> Vec<ParsingResult> {
     return return_vector;
 }
 
-pub fn parse_block(tokens: &mut TokenIter) -> ParsingResult {
+pub fn declaration(tokens: &mut TokenIter) -> ParsingResult {
     let token = tokens.peek();
 
     match token.unwrap().token_type {
-        TokenType::EOF => Err(ParsingError {
-            line_number: 0,
-            message: "EOF found at beginning of file".to_string(),
-        }),
+        TokenType::Let => variable_statement(tokens),
+        _ => statement(tokens),
+    }
+}
 
+pub fn statement(tokens: &mut TokenIter) -> ParsingResult {
+    let token = tokens.peek();
+
+    match token.unwrap().token_type {
         TokenType::Print => print_statement(tokens),
 
         _ => Ok(ParsedBlock::Expression(expression(tokens)?)),

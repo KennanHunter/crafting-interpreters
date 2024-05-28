@@ -51,7 +51,7 @@ impl TokenType {
         keyword_lookup.insert("super", TokenType::Super);
         keyword_lookup.insert("this", TokenType::This);
         keyword_lookup.insert("true", TokenType::True);
-        keyword_lookup.insert("var", TokenType::Var);
+        keyword_lookup.insert("let", TokenType::Let);
         keyword_lookup.insert("while", TokenType::While);
         keyword_lookup.insert("and", TokenType::And);
 
@@ -106,7 +106,7 @@ pub enum TokenType {
     Super,
     This,
     True,
-    Var,
+    Let,
     While,
 
     EOF,
