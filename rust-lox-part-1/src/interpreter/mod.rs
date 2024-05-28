@@ -227,7 +227,7 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                         left_string.to_owned() + right_string,
                     )),
                     _ => Err(RuntimeError {
-                        message: format!("Cannot add types {left_parsed} and {right_parsed}"),
+                        message: format!("Cannot add values {left_parsed} and {right_parsed}"),
                         line_number,
                     }),
                 }
@@ -246,7 +246,7 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                         ExpressionLiteral::Number(right_number),
                     ) => Ok(ExpressionLiteral::Number(left_number - right_number)),
                     _ => Err(RuntimeError {
-                        message: format!("Cannot subtract types {left_parsed} and {right_parsed}"),
+                        message: format!("Cannot subtract values {left_parsed} and {right_parsed}"),
                         line_number,
                     }),
                 }

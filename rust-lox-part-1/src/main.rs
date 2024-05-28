@@ -5,7 +5,7 @@ pub mod scanner;
 pub mod tokens;
 pub mod tree;
 
-use std::{env, fs};
+use std::{env, fs, time};
 
 use interpreter::interpret;
 use parser::{parse_blocks, ParsingResult};
@@ -72,7 +72,17 @@ fn run(source: String) {
         return;
     }
 
-    println!("\n---- output ----\n");
+    let starting_time = time::Instant::now();
 
-    let _ = interpret(syntax_tree);
+    println!("\n---- output ----");
+
+    match interpret(syntax_tree) {
+        Ok(_) => println!("---- program finished ----\n\nExecuted in {}μs", starting_time.elapsed().as_micros()),
+        Err(err) => {
+            println!(
+                "---- program errored ----\n\nExperienced runtime error at line {} with message:\n {}",
+                err.line_number, err.message
+            )
+        }
+    }
 }
