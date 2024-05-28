@@ -77,7 +77,10 @@ fn run(source: String) {
     println!("\n---- output ----");
 
     match interpret(syntax_tree) {
-        Ok(_) => println!("---- program finished ----\n\nExecuted in {}μs", starting_time.elapsed().as_micros()),
+        Ok(_) => println!(
+            "---- program finished ----\n\nExecuted in {}μs",
+            starting_time.elapsed().as_micros()
+        ),
         Err(err) => {
             println!(
                 "---- program errored ----\n\nExperienced runtime error at line {} with message:\n {}",
