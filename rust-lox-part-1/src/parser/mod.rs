@@ -14,6 +14,7 @@ pub type ParsingResult = Result<ParsedBlock, ParsingError>;
 type TokenIter<'a> = std::iter::Peekable<std::slice::Iter<'a, Token>>;
 type ExpressionParsingResult = Result<Expression, ParsingError>;
 
+#[derive(Debug, Clone)]
 pub enum ParsedBlock {
     Expression(Expression),
     Statement(Statement),
@@ -27,7 +28,9 @@ pub fn parse_blocks(tokens_vec: Vec<Token>) -> Vec<ParsingResult> {
     loop {
         return_vector.push(parse_block(&mut tokens));
 
-        if tokens.peek().is_none() {
+        let token = tokens.peek();
+
+        if token.is_none() || token.is_some_and(|token| token.token_type == TokenType::EOF) {
             break;
         }
     }

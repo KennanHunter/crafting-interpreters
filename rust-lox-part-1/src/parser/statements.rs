@@ -4,11 +4,15 @@ use crate::{parser::expression, tokens::TokenType};
 
 use super::{ParsedBlock, ParsingResult, TokenIter};
 
+#[derive(Debug, Clone)]
 pub enum Statement {
     Print(Expression),
 }
 
 pub fn print_statement(tokens: &mut TokenIter) -> ParsingResult {
+    // consume "Print"
+    tokens.next();
+
     let contained_expression = expression(tokens)?;
 
     match tokens.next() {

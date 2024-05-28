@@ -37,8 +37,6 @@ impl ExpressionLiteral {
             },
         }
     }
-
-
 }
 
 #[derive(Debug, PartialEq, Clone)]

@@ -1,6 +1,3 @@
-#![feature(anonymous_lifetime_in_impl_trait)]
-#![feature(iter_collect_into)]
-
 pub mod errors;
 pub mod interpreter;
 pub mod parser;
@@ -11,10 +8,8 @@ pub mod tree;
 use std::{env, fs};
 
 use interpreter::interpret;
-use parser::{parse_block, parse_blocks, ParsingResult};
+use parser::{parse_blocks, ParsingResult};
 use scanner::scan_tokens;
-
-use crate::interpreter::interpret_expression_tree;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -33,17 +28,13 @@ fn main() {
         0 => unreachable!("Will always have at least the path of the executable"),
     };
 
-    let source_file = run_file(file_name.unwrap());
+    let source_file = read_file(file_name.unwrap());
 
     run(source_file);
 }
 
-fn run_file(file_name: &str) -> String {
+fn read_file(file_name: &str) -> String {
     let file_contents = fs::read_to_string(file_name).expect("File name is invalid");
-
-    if file_contents.lines().count() >= u64::MAX.try_into().unwrap() {
-        panic!("Why the fuck is this file so large")
-    };
 
     return file_contents;
 }
@@ -54,13 +45,34 @@ fn run_file(file_name: &str) -> String {
 fn run(source: String) {
     let tokens = scan_tokens(source).unwrap();
 
+    println!("Scanned {} tokens", tokens.len());
+
     let syntax_tree: Vec<ParsingResult> = parse_blocks(tokens);
 
-    let parsing_has_error = syntax_tree.iter().any(|parsed_block| parsed_block.is_err());
+    println!("Parsed tokens into {} blocks", syntax_tree.len());
 
-    if parsing_has_error {
+    let parsing_errors = syntax_tree
+        .iter()
+        .filter(|&parsed_block| parsed_block.is_err());
+
+    let mut has_parsing_error = false;
+
+    for error_res in parsing_errors {
+        let error = error_res.clone().unwrap_err();
+
+        println!(
+            "Error appeared at line number {} with issue: {}",
+            error.line_number, error.message
+        );
+
+        has_parsing_error = true
+    }
+
+    if has_parsing_error {
         return;
-    };
+    }
+
+    println!("\n---- output ----\n");
 
     let _ = interpret(syntax_tree);
 }
