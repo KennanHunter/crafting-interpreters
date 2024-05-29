@@ -1,12 +1,16 @@
+mod environment;
 mod statements;
 mod tests;
+
+use environment::{Environment, VariableStore};
+use statements::interpret_variable_definition;
 
 use crate::{
     errors::RuntimeError,
     parser::{statements::Statement, ParsedBlock, ParsingResult},
     tree::expression::{
-        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
-        Operation, TermOperation, UnaryOperation,
+        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
+        FactorOperation, Operation, TermOperation, UnaryOperation,
     },
 };
 
@@ -14,13 +18,18 @@ use self::statements::interpret_print;
 
 // TODO: Test
 pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
+    let mut environment = Environment {
+        variables: VariableStore::new(),
+    };
+
     for block in blocks {
         match block.unwrap() {
             ParsedBlock::Expression(expr) => {
-                interpret_expression_tree(expr)?;
+                interpret_expression_tree(&environment, expr)?;
             }
             ParsedBlock::Statement(statement) => {
-                interpret_statement(statement)?;
+                // TODO: Find some way to get the line number of a statement
+                interpret_statement(&mut environment, statement, 0)?;
             }
         }
     }
@@ -28,18 +37,29 @@ pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
     Ok(())
 }
 
-pub fn interpret_statement(statement: Statement) -> Result<(), RuntimeError> {
+pub fn interpret_statement(
+    environment: &mut Environment,
+    statement: Statement,
+    line_number: usize,
+) -> Result<(), RuntimeError> {
     match statement {
-        Statement::Print(enclosed_expression) => interpret_print(enclosed_expression)?,
-        Statement::Variable(_, _) => todo!(),
+        Statement::Print(enclosed_expression) => interpret_print(environment, enclosed_expression)?,
+        Statement::Variable(name, value) => {
+            interpret_variable_definition(environment, line_number, name, value)?
+        }
     }
 
     Ok(())
 }
 
-pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, RuntimeError> {
+pub fn interpret_expression_tree(
+    environment: &Environment,
+    tree: Expression,
+) -> Result<ExpressionLiteral, RuntimeError> {
     let literal: Result<ExpressionLiteral, RuntimeError> = match tree {
-        Expression::Grouping(grouped_expression) => interpret_expression_tree(*grouped_expression),
+        Expression::Grouping(grouped_expression) => {
+            interpret_expression_tree(environment, *grouped_expression)
+        }
         Expression::Literal(literal) => Ok(literal),
         Expression::Operation(operation) => match operation {
             Operation::Negate(UnaryOperation {
@@ -57,13 +77,13 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                         message: format!("Tried to Negate invalid literal: {literal}"),
                     }),
                 },
-                expression => interpret_expression_tree(expression),
+                expression => interpret_expression_tree(&environment, expression),
             },
             Operation::Not(UnaryOperation {
                 operand,
                 line_number: _,
             }) => {
-                if is_truthy(*operand)? {
+                if is_truthy(environment, *operand)? {
                     Ok(ExpressionLiteral::False)
                 } else {
                     Ok(ExpressionLiteral::True)
@@ -74,8 +94,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 if !left_parsed.is_same_type(&right_parsed) {
                     return Err(RuntimeError {
@@ -98,8 +118,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 if !left_parsed.is_same_type(&right_parsed) {
                     return Err(RuntimeError {
@@ -122,8 +142,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -145,8 +165,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -168,8 +188,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -191,8 +211,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -214,8 +234,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -239,8 +259,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -258,8 +278,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 match (&left_parsed, &right_parsed) {
                     (
@@ -277,8 +297,8 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 right,
                 line_number,
             }) => {
-                let left_parsed = interpret_expression_tree(*left)?;
-                let right_parsed = interpret_expression_tree(*right)?;
+                let left_parsed = interpret_expression_tree(environment, *left)?;
+                let right_parsed = interpret_expression_tree(environment, *right)?;
 
                 // TODO: Handle divide by zero behavior
 
@@ -294,12 +314,18 @@ pub fn interpret_expression_tree(tree: Expression) -> Result<ExpressionLiteral, 
                 }
             }
         },
+        Expression::Variable(ExpressionVariable {
+            line_number,
+            identifier_name,
+        }) => environment
+            .variables
+            .get_variable(line_number, identifier_name),
     };
 
     return Ok(literal?);
 }
 
-pub fn is_truthy(expr: Expression) -> Result<bool, RuntimeError> {
+pub fn is_truthy(environment: &Environment, expr: Expression) -> Result<bool, RuntimeError> {
     match expr {
         Expression::Literal(literal) => match literal {
             ExpressionLiteral::Number(number) => Ok(number != 0.0),
@@ -308,6 +334,9 @@ pub fn is_truthy(expr: Expression) -> Result<bool, RuntimeError> {
             ExpressionLiteral::False => Ok(false),
             ExpressionLiteral::Nil => Ok(false),
         },
-        tree => is_truthy(Expression::Literal(interpret_expression_tree(tree)?)),
+        tree => is_truthy(
+            environment,
+            Expression::Literal(interpret_expression_tree(environment, tree)?),
+        ),
     }
 }

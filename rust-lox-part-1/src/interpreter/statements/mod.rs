@@ -2,10 +2,14 @@ use std::io::Write;
 
 use crate::{errors::RuntimeError, tree::expression::Expression};
 
-use super::interpret_expression_tree;
+use super::{environment::Environment, interpret_expression_tree};
 
-pub fn interpret_print(enclosed_expression: Expression) -> Result<(), RuntimeError> {
-    let mut evaluated_string = interpret_expression_tree(enclosed_expression)?.to_string();
+pub fn interpret_print(
+    environment: &Environment,
+    enclosed_expression: Expression,
+) -> Result<(), RuntimeError> {
+    let mut evaluated_string =
+        interpret_expression_tree(environment, enclosed_expression)?.to_string();
 
     evaluated_string.push('\n');
 
@@ -18,4 +22,19 @@ pub fn interpret_print(enclosed_expression: Expression) -> Result<(), RuntimeErr
         }
         Ok(_) => Ok(()),
     }
+}
+
+pub fn interpret_variable_definition(
+    environment: &mut Environment,
+    line_number: usize,
+    name: String,
+    value: Expression,
+) -> Result<(), RuntimeError> {
+    environment.variables.define_variable(
+        line_number,
+        name,
+        interpret_expression_tree(&environment, value)?,
+    )?;
+
+    Ok(())
 }

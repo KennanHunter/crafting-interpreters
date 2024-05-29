@@ -8,8 +8,8 @@ use crate::{
     scanner::scan_tokens,
     tokens::{Token, TokenType},
     tree::expression::{
-        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
-        Operation, TermOperation, UnaryOperation,
+        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
+        FactorOperation, Operation, TermOperation, UnaryOperation,
     },
 };
 
@@ -341,5 +341,24 @@ fn test_expression_parse_grouped_expression() {
                 line_number: 1
             }
         )))
+    );
+}
+
+#[test]
+fn test_variable_reference_parsing() {
+    let tokens = scan_tokens("epic + 4".to_string()).unwrap();
+
+    let result = term(&mut tokens.iter().peekable());
+
+    assert_eq!(
+        result,
+        Ok(Expression::Operation(Operation::Plus(TermOperation {
+            left: (Box::new(Expression::Variable(ExpressionVariable {
+                line_number: 1,
+                identifier_name: "epic".to_string()
+            }))),
+            right: (Box::new(Expression::Literal(ExpressionLiteral::Number(4.0)))),
+            line_number: 1
+        })))
     );
 }

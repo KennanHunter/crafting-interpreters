@@ -6,6 +6,13 @@ pub enum Expression {
     Literal(ExpressionLiteral),
     Operation(Operation),
     Grouping(Box<Expression>),
+    Variable(ExpressionVariable),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ExpressionVariable {
+    pub line_number: usize,
+    pub identifier_name: String,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -97,6 +104,7 @@ impl Display for Expression {
             Expression::Literal(literal) => write!(f, "{}", *literal),
             Expression::Operation(operation) => write!(f, "{}", *operation),
             Expression::Grouping(expression) => write!(f, "( {} )", *expression),
+            Expression::Variable(name) => write!(f, "( *{} )", name.identifier_name),
         }
     }
 }

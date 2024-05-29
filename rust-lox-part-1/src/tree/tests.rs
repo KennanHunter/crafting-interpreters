@@ -1,7 +1,7 @@
 #![cfg(test)]
 use crate::tree::expression::{
-    EqualityOperation, Expression, ExpressionLiteral, FactorOperation, Operation, TermOperation,
-    UnaryOperation,
+    EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable, FactorOperation,
+    Operation, TermOperation, UnaryOperation,
 };
 
 #[test]
@@ -14,6 +14,15 @@ fn number_literal_can_be_pretty_printed() {
 fn string_literal_can_be_pretty_printed() {
     let expression = Expression::Literal(ExpressionLiteral::String("Test String".to_string()));
     assert_eq!(expression.to_string(), "\"Test String\"");
+}
+
+#[test]
+fn variable_reference_can_be_pretty_printed() {
+    let expression = Expression::Variable(ExpressionVariable {
+        line_number: 0,
+        identifier_name: "epic".to_string(),
+    });
+    assert_eq!(expression.to_string(), "( *epic )");
 }
 
 #[test]

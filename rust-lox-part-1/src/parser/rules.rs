@@ -3,8 +3,8 @@ use statements::variable_statement;
 use crate::errors::ParsingError;
 use crate::tokens::TokenType;
 use crate::tree::expression::{
-    ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
-    Operation, TermOperation, UnaryOperation,
+    ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
+    FactorOperation, Operation, TermOperation, UnaryOperation,
 };
 
 use self::statements::print_statement;
@@ -255,6 +255,11 @@ pub fn primary(tokens: &mut TokenIter) -> ExpressionParsingResult {
 
             Ok(Expression::Grouping(Box::from(expr)))
         }
+
+        TokenType::Identifier(identifier_name) => Ok(Expression::Variable(ExpressionVariable {
+            line_number: token.line_number,
+            identifier_name: identifier_name.clone(),
+        })),
 
         unrecognized_type => Err(ParsingError {
             line_number: token.line_number,
