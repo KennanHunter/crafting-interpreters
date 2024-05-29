@@ -1,9 +1,9 @@
-let outer = 6;
+let prev = 0;
+let cur = 1;
 
-if outer > 5  {
-    let inner = "inside variable";
-
-    print ("this was true" and "fuck");
-} else {
-    print "this was false";
+while cur < 1000 {
+    let temp = prev + cur;
+    prev = cur;
+    cur = temp;
+    print cur;
 }

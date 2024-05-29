@@ -7,7 +7,7 @@ use crate::tree::expression::{
     FactorOperation, LogicalOperation, Operation, TermOperation, UnaryOperation,
 };
 
-use super::statements::{if_statement, print_statement};
+use super::statements::{if_statement, print_statement, while_statement};
 use super::util::consume_expected_character;
 use super::{
     parse_steps, statements, ExpressionParsingResult, ParsedStep, ParsingResult, TokenIter,
@@ -29,6 +29,7 @@ pub fn statement(tokens: &mut TokenIter) -> ParsingResult {
         TokenType::Print => print_statement(tokens),
         TokenType::LeftBrace => block(tokens),
         TokenType::If => if_statement(tokens),
+        TokenType::While => while_statement(tokens),
 
         _ => {
             let expr = expression(tokens)?;

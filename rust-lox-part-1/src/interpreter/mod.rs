@@ -8,7 +8,7 @@ use statements::interpret_variable_definition;
 use crate::{
     errors::RuntimeError,
     parser::{
-        statements::{IfStatement, Statement},
+        statements::{IfStatement, Statement, WhileStatement},
         ParsedStep, ParsingResult,
     },
     tree::expression::{
@@ -73,6 +73,11 @@ pub fn interpret_statement(
                 interpret_step(environment, *then_statement)?;
             } else if else_statement.is_some() {
                 interpret_step(environment, *else_statement.unwrap())?;
+            }
+        }
+        Statement::While(WhileStatement { condition, body }) => {
+            while is_truthy(environment, condition.clone())? {
+                interpret_step(environment, *body.clone())?;
             }
         }
     }

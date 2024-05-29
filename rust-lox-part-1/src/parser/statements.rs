@@ -13,6 +13,7 @@ pub enum Statement {
     Print(Expression),
     Variable(String, Expression),
     If(IfStatement),
+    While(WhileStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -20,6 +21,12 @@ pub struct IfStatement {
     pub condition: Expression,
     pub then_statement: Box<ParsedStep>,
     pub else_statement: Option<Box<ParsedStep>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct WhileStatement {
+    pub condition: Expression,
+    pub body: Box<ParsedStep>,
 }
 
 pub fn print_statement(tokens: &mut TokenIter) -> ParsingResult {
@@ -92,5 +99,18 @@ pub fn if_statement(tokens: &mut TokenIter) -> ParsingResult {
         condition,
         then_statement,
         else_statement,
+    })))
+}
+
+pub fn while_statement(tokens: &mut TokenIter) -> ParsingResult {
+    consume_expected_character(tokens, TokenType::While)?;
+
+    let condition = expression(tokens)?;
+
+    let body = Box::new(block(tokens)?);
+
+    Ok(ParsedStep::Statement(Statement::While(WhileStatement {
+        condition,
+        body,
     })))
 }
