@@ -45,11 +45,11 @@ fn read_file(file_name: &str) -> String {
 fn run(source: String) {
     let tokens = scan_tokens(source).unwrap();
 
-    println!("Scanned {} tokens", tokens.len());
+    eprintln!("Scanned {} tokens", tokens.len());
 
     let syntax_tree: Vec<ParsingResult> = parse(tokens);
 
-    println!("Parsed tokens into {} blocks", syntax_tree.len());
+    eprintln!("Parsed tokens into {} blocks", syntax_tree.len());
 
     let parsing_errors = syntax_tree
         .iter()
@@ -60,7 +60,7 @@ fn run(source: String) {
     for error_res in parsing_errors {
         let error = error_res.clone().unwrap_err();
 
-        println!(
+        eprintln!(
             "Error appeared at line number {} with issue: {}",
             error.line_number, error.message
         );
@@ -74,15 +74,15 @@ fn run(source: String) {
 
     let starting_time = time::Instant::now();
 
-    println!("\n---- output ----");
+    eprintln!("\n---- output ----");
 
     match interpret(syntax_tree) {
-        Ok(_) => println!(
+        Ok(_) => eprintln!(
             "---- program finished ----\n\nExecuted in {}μs",
             starting_time.elapsed().as_micros()
         ),
         Err(err) => {
-            println!(
+            eprintln!(
                 "---- program errored ----\n\nExperienced runtime error at line {} with message:\n {}",
                 err.line_number, err.message
             )
