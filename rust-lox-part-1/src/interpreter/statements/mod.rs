@@ -32,9 +32,7 @@ pub fn interpret_variable_definition(
 ) -> Result<(), RuntimeError> {
     let evaluated_value = interpret_expression_tree(environment, value)?;
 
-    environment
-        .variables
-        .define_variable(line_number, name, evaluated_value)?;
+    environment.define_variable(line_number, name, evaluated_value)?;
 
     Ok(())
 }

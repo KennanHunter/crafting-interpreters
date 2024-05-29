@@ -3,19 +3,23 @@ use std::collections::HashMap;
 use crate::{errors::RuntimeError, tree::expression::ExpressionLiteral};
 
 #[derive(Debug, Default)]
-pub struct Environment {
-    pub variables: VariableStore,
-}
-
-#[derive(Debug, Default)]
-pub struct VariableStore {
+pub struct Environment<'a> {
     map: HashMap<String, ExpressionLiteral>,
+    pub enclosing_environment: Option<&'a mut Environment<'a>>,
 }
 
-impl VariableStore {
-    pub fn new() -> VariableStore {
-        VariableStore {
+impl<'a> Environment<'a> {
+    pub fn new() -> Environment<'a> {
+        Environment {
             map: HashMap::new(),
+            enclosing_environment: None,
+        }
+    }
+
+    pub fn with_parent(parent: &'a mut Environment<'a>) -> Environment<'a> {
+        Environment {
+            map: HashMap::new(),
+            enclosing_environment: Some(parent),
         }
     }
 
@@ -24,13 +28,20 @@ impl VariableStore {
         line_number: usize,
         name: String,
     ) -> Result<ExpressionLiteral, RuntimeError> {
-        match self.map.get(&name) {
-            Some(value) => Ok(value.clone()),
-            None => Err(RuntimeError {
-                line_number,
-                message: format!("Undefined variable {name}"),
-            }),
+        let read_variable = self.map.get(&name);
+
+        if let Some(literal) = read_variable {
+            return Ok(literal.clone());
         }
+
+        if let Some(enclosed_environment) = &self.enclosing_environment {
+            return enclosed_environment.get_variable(line_number, name);
+        }
+
+        Err(RuntimeError {
+            line_number,
+            message: format!("Variable {name} not found in scope"),
+        })
     }
 
     pub fn define_variable(
@@ -58,6 +69,10 @@ impl VariableStore {
         value: ExpressionLiteral,
     ) -> Result<ExpressionLiteral, RuntimeError> {
         if !self.map.contains_key(&name) {
+            if let Some(enclosed) = self.enclosing_environment.as_mut() {
+                return enclosed.set_variable(line_number, name, value);
+            }
+
             return Err(RuntimeError {
                 line_number,
                 message: format!("Variable {name} not defined"),

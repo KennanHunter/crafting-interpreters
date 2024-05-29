@@ -2,7 +2,7 @@ mod environment;
 mod statements;
 mod tests;
 
-use environment::{Environment, VariableStore};
+use environment::Environment;
 use statements::interpret_variable_definition;
 
 use crate::{
@@ -18,18 +18,16 @@ use self::statements::interpret_print;
 
 // TODO: Test
 pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
-    let mut environment = Environment {
-        variables: VariableStore::new(),
-    };
+    let mut global_environment = Environment::new();
 
     for block in blocks {
         match block.unwrap() {
             ParsedBlock::Expression(expr) => {
-                interpret_expression_tree(&mut environment, expr)?;
+                interpret_expression_tree(&mut global_environment, expr)?;
             }
             ParsedBlock::Statement(statement) => {
                 // TODO: Find some way to get the line number of a statement
-                interpret_statement(&mut environment, statement, 0)?;
+                interpret_statement(&mut global_environment, statement, 0)?;
             }
         }
     }
@@ -317,14 +315,12 @@ pub fn interpret_expression_tree(
         Expression::Variable(ExpressionVariable {
             line_number,
             identifier_name,
-        }) => environment
-            .variables
-            .get_variable(line_number, identifier_name),
+        }) => environment.get_variable(line_number, identifier_name),
 
         Expression::Assign(expression_variable, right_side_tree) => {
             let expression_value = interpret_expression_tree(environment, *right_side_tree)?;
 
-            environment.variables.set_variable(
+            environment.set_variable(
                 expression_variable.line_number,
                 expression_variable.identifier_name,
                 expression_value,
