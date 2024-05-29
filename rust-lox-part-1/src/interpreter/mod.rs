@@ -13,7 +13,7 @@ use crate::{
     },
     tree::expression::{
         ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
-        FactorOperation, Operation, TermOperation, UnaryOperation,
+        FactorOperation, LogicalOperation, Operation, TermOperation, UnaryOperation,
     },
 };
 
@@ -107,6 +107,7 @@ pub fn interpret_expression_tree(
                 },
                 expression => interpret_expression_tree(environment, expression),
             },
+
             Operation::Not(UnaryOperation {
                 operand,
                 line_number: _,
@@ -117,6 +118,7 @@ pub fn interpret_expression_tree(
                     Ok(ExpressionLiteral::True)
                 }
             }
+
             Operation::Equal(EqualityOperation {
                 left,
                 right,
@@ -141,6 +143,7 @@ pub fn interpret_expression_tree(
                     Ok(ExpressionLiteral::False)
                 }
             }
+
             Operation::NotEqual(EqualityOperation {
                 left,
                 right,
@@ -165,6 +168,7 @@ pub fn interpret_expression_tree(
                     Ok(ExpressionLiteral::False)
                 }
             }
+
             Operation::Less(ComparisonOperation {
                 left,
                 right,
@@ -188,6 +192,7 @@ pub fn interpret_expression_tree(
                     }),
                 }
             }
+
             Operation::LessEqual(ComparisonOperation {
                 left,
                 right,
@@ -211,6 +216,7 @@ pub fn interpret_expression_tree(
                     }),
                 }
             }
+
             Operation::Greater(ComparisonOperation {
                 left,
                 right,
@@ -234,6 +240,7 @@ pub fn interpret_expression_tree(
                     }),
                 }
             }
+
             Operation::GreaterEqual(ComparisonOperation {
                 left,
                 right,
@@ -257,6 +264,7 @@ pub fn interpret_expression_tree(
                     }),
                 }
             }
+
             Operation::Plus(TermOperation {
                 left,
                 right,
@@ -282,6 +290,7 @@ pub fn interpret_expression_tree(
                     }),
                 }
             }
+
             Operation::Minus(TermOperation {
                 left,
                 right,
@@ -301,6 +310,7 @@ pub fn interpret_expression_tree(
                     }),
                 }
             }
+
             Operation::Multiply(FactorOperation {
                 left,
                 right,
@@ -320,6 +330,7 @@ pub fn interpret_expression_tree(
                     }),
                 }
             }
+
             Operation::Divide(FactorOperation {
                 left,
                 right,
@@ -340,6 +351,34 @@ pub fn interpret_expression_tree(
                         line_number,
                     }),
                 }
+            }
+
+            Operation::And(LogicalOperation {
+                left,
+                right,
+                line_number: _,
+            }) => {
+                let left = interpret_expression_tree(environment, *left)?;
+
+                if !is_truthy(environment, Expression::Literal(left.clone()))? {
+                    return Ok(left);
+                }
+
+                return Ok(interpret_expression_tree(environment, *right)?);
+            }
+
+            Operation::Or(LogicalOperation {
+                left,
+                right,
+                line_number: _,
+            }) => {
+                let left = interpret_expression_tree(environment, *left)?;
+
+                if is_truthy(environment, Expression::Literal(left.clone()))? {
+                    return Ok(left);
+                }
+
+                return Ok(interpret_expression_tree(environment, *right)?);
             }
         },
         Expression::Variable(ExpressionVariable {

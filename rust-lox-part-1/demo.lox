@@ -1,9 +1,9 @@
-let outer = 3;
+let outer = 6;
 
 if outer > 5  {
     let inner = "inside variable";
 
-    print "this was true";
+    print ("this was true" and "fuck");
 } else {
     print "this was false";
 }

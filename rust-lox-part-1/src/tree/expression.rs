@@ -82,6 +82,13 @@ pub struct UnaryOperation {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct LogicalOperation {
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
+    pub line_number: usize,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum Operation {
     Negate(UnaryOperation),
     Not(UnaryOperation),
@@ -97,6 +104,9 @@ pub enum Operation {
     Minus(TermOperation),
     Multiply(FactorOperation),
     Divide(FactorOperation),
+
+    And(LogicalOperation),
+    Or(LogicalOperation),
 }
 
 impl Display for Expression {
@@ -107,7 +117,7 @@ impl Display for Expression {
             Expression::Grouping(expression) => write!(f, "( {} )", *expression),
             Expression::Variable(name) => write!(f, "( *{} )", name.identifier_name),
             Expression::Assign(name, value) => {
-                write!(f, "( {} = {} )", name.identifier_name, value)
+                write!(f, "( {} <-- {} )", name.identifier_name, value)
             }
         }
     }
@@ -204,6 +214,16 @@ impl Display for Operation {
                     *binary_operation.left, *binary_operation.right
                 )
             }
+            Operation::And(logical_operation) => write!(
+                f,
+                "( and {} {} )",
+                *logical_operation.left, *logical_operation.right
+            ),
+            Operation::Or(logical_operation) => write!(
+                f,
+                "( or {} {} )",
+                *logical_operation.left, *logical_operation.right
+            ),
         }
     }
 }

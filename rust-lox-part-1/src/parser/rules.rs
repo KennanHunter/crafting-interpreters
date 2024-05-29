@@ -4,10 +4,8 @@ use crate::errors::ParsingError;
 use crate::tokens::TokenType;
 use crate::tree::expression::{
     ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
-    FactorOperation, Operation, TermOperation, UnaryOperation,
+    FactorOperation, LogicalOperation, Operation, TermOperation, UnaryOperation,
 };
-
-
 
 use super::statements::{if_statement, print_statement};
 use super::util::consume_expected_character;
@@ -57,7 +55,7 @@ pub fn expression(tokens: &mut TokenIter) -> ExpressionParsingResult {
 }
 
 pub fn assignment(tokens: &mut TokenIter) -> ExpressionParsingResult {
-    let left_side = equality(tokens)?;
+    let left_side = logical_or(tokens)?;
 
     match tokens.peek().copied() {
         Some(token) if token.token_type == TokenType::Equal => {
@@ -73,12 +71,54 @@ pub fn assignment(tokens: &mut TokenIter) -> ExpressionParsingResult {
                 )),
                 _ => Err(ParsingError {
                     line_number: token.line_number,
-                    message: format!("expected left side of = operator to be identifier"),
+                    message: format!("expected left side of assignment operator to be identifier"),
                 }),
             }
         }
         _ => Ok(left_side),
     }
+}
+
+pub fn logical_or(tokens: &mut TokenIter) -> ExpressionParsingResult {
+    let mut expr = logical_and(tokens)?;
+
+    loop {
+        match tokens.peek() {
+            Some(&token) if token.token_type == TokenType::Or => {
+                consume_expected_character(tokens, TokenType::Or)?;
+
+                expr = Expression::Operation(Operation::Or(LogicalOperation {
+                    left: Box::new(expr),
+                    right: Box::new(logical_and(tokens)?),
+                    line_number: token.line_number,
+                }))
+            }
+            _ => break,
+        };
+    }
+
+    Ok(expr)
+}
+
+pub fn logical_and(tokens: &mut TokenIter) -> ExpressionParsingResult {
+    let mut expr = equality(tokens)?;
+
+    loop {
+        match tokens.peek() {
+            Some(&token) if token.token_type == TokenType::And => {
+                consume_expected_character(tokens, TokenType::And)?;
+
+                expr = Expression::Operation(Operation::And(LogicalOperation {
+                    left: Box::new(expr),
+                    right: Box::new(equality(tokens)?),
+                    line_number: token.line_number,
+                }))
+            }
+            _ => break,
+        };
+    }
+
+    Ok(expr)
 }
 
 pub fn equality(tokens: &mut TokenIter) -> ExpressionParsingResult {
