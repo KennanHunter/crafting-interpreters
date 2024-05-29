@@ -6,4 +6,8 @@ let outer = 3;
     let inner = outer * 5 + 2;
 
     print inner;
+
+    {
+        
+    }
 }

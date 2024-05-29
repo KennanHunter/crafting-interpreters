@@ -49,8 +49,6 @@ fn parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
     let mut return_vector: Vec<ParsingResult> = vec![];
 
     loop {
-        return_vector.push(declaration(tokens));
-
         let token = tokens.peek();
 
         if token.is_none()
@@ -59,6 +57,8 @@ fn parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
         {
             break;
         }
+
+        return_vector.push(declaration(tokens));
     }
 
     return return_vector;
