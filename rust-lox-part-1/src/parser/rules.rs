@@ -10,7 +10,9 @@ use crate::tree::expression::{
 use self::statements::print_statement;
 
 use super::util::consume_expected_character;
-use super::{statements, ExpressionParsingResult, ParsedBlock, ParsingResult, TokenIter};
+use super::{
+    parse_steps, statements, ExpressionParsingResult, ParsedStep, ParsingResult, TokenIter,
+};
 
 pub fn declaration(tokens: &mut TokenIter) -> ParsingResult {
     let token = tokens.peek();
@@ -26,15 +28,26 @@ pub fn statement(tokens: &mut TokenIter) -> ParsingResult {
 
     match token.unwrap().token_type {
         TokenType::Print => print_statement(tokens),
+        TokenType::LeftBrace => block(tokens),
 
         _ => {
             let expr = expression(tokens)?;
 
             consume_expected_character(tokens, TokenType::Semicolon)?;
 
-            Ok(ParsedBlock::Expression(expr))
+            Ok(ParsedStep::Expression(expr))
         }
     }
+}
+
+pub fn block(tokens: &mut TokenIter) -> ParsingResult {
+    consume_expected_character(tokens, TokenType::LeftBrace)?;
+
+    let block_steps = parse_steps(tokens);
+
+    consume_expected_character(tokens, TokenType::RightBrace)?;
+
+    Ok(ParsedStep::Block(block_steps))
 }
 
 pub fn expression(tokens: &mut TokenIter) -> ExpressionParsingResult {

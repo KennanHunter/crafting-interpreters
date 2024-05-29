@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use crate::{errors::RuntimeError, tree::expression::ExpressionLiteral};
 
 #[derive(Debug, Default)]
-pub struct Environment<'a> {
+pub struct Environment<'inner> {
     map: HashMap<String, ExpressionLiteral>,
-    pub enclosing_environment: Option<&'a mut Environment<'a>>,
+    pub enclosing_environment: Option<&'inner mut Environment<'inner>>,
 }
 
 impl<'a> Environment<'a> {

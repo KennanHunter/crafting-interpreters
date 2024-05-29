@@ -7,7 +7,7 @@ use statements::interpret_variable_definition;
 
 use crate::{
     errors::RuntimeError,
-    parser::{statements::Statement, ParsedBlock, ParsingResult},
+    parser::{statements::Statement, ParsedStep, ParsingResult},
     tree::expression::{
         ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
         FactorOperation, Operation, TermOperation, UnaryOperation,
@@ -17,18 +17,26 @@ use crate::{
 use self::statements::interpret_print;
 
 // TODO: Test
-pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
-    let mut global_environment = Environment::new();
+pub fn interpret(steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
+    let global_environment = &mut Environment::new();
 
-    for block in blocks {
-        match block.unwrap() {
-            ParsedBlock::Expression(expr) => {
-                interpret_expression_tree(&mut global_environment, expr)?;
+    interpret_block(global_environment, steps)
+}
+
+pub fn interpret_block<'outer>(
+    environment: &'outer mut Environment<'outer>,
+    steps: Vec<ParsingResult>,
+) -> Result<(), RuntimeError> {
+    for step in steps {
+        match step.unwrap() {
+            ParsedStep::Expression(expr) => {
+                interpret_expression_tree(environment, expr)?;
             }
-            ParsedBlock::Statement(statement) => {
+            ParsedStep::Statement(statement) => {
                 // TODO: Find some way to get the line number of a statement
-                interpret_statement(&mut global_environment, statement, 0)?;
+                interpret_statement(environment, statement, 0)?;
             }
+            ParsedStep::Block(steps) => todo!(),
         }
     }
 

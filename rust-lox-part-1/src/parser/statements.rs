@@ -3,7 +3,7 @@ use crate::tokens::TokenType;
 use crate::tree::expression::Expression;
 
 use super::{
-    rules::expression, util::consume_expected_character, ParsedBlock, ParsingResult, TokenIter,
+    rules::expression, util::consume_expected_character, ParsedStep, ParsingResult, TokenIter,
 };
 
 #[derive(Debug, Clone)]
@@ -20,7 +20,7 @@ pub fn print_statement(tokens: &mut TokenIter) -> ParsingResult {
 
     consume_expected_character(tokens, TokenType::Semicolon)?;
 
-    Ok(ParsedBlock::Statement(Statement::Print(
+    Ok(ParsedStep::Statement(Statement::Print(
         contained_expression,
     )))
 }
@@ -52,7 +52,7 @@ pub fn variable_statement(tokens: &mut TokenIter) -> ParsingResult {
         .next_if(|value| value.token_type == TokenType::Semicolon)
         .expect("expected semicolon following variable declaration");
 
-    Ok(ParsedBlock::Statement(Statement::Variable(
+    Ok(ParsedStep::Statement(Statement::Variable(
         identifier_name.clone(),
         value,
     )))

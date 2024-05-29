@@ -8,7 +8,7 @@ pub mod tree;
 use std::{env, fs, time};
 
 use interpreter::interpret;
-use parser::{parse_blocks, ParsingResult};
+use parser::{parse, ParsingResult};
 use scanner::scan_tokens;
 
 fn main() {
@@ -47,7 +47,7 @@ fn run(source: String) {
 
     println!("Scanned {} tokens", tokens.len());
 
-    let syntax_tree: Vec<ParsingResult> = parse_blocks(tokens);
+    let syntax_tree: Vec<ParsingResult> = parse(tokens);
 
     println!("Parsed tokens into {} blocks", syntax_tree.len());
 

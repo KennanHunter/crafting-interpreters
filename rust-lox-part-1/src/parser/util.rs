@@ -13,7 +13,7 @@ pub fn consume_expected_character(
         Some(token) if token.token_type == expected_token_type => Ok(token.clone()),
         Some(unrecognized_token) => Err(ParsingError {
             message: format!(
-                "Expected {:?}, found \"{:?}\" following expression",
+                "Expected {:?}, found \"{:?}\"",
                 expected_token_type, unrecognized_token.token_type
             ),
             line_number: unrecognized_token.line_number,
