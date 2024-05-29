@@ -7,7 +7,10 @@ use statements::interpret_variable_definition;
 
 use crate::{
     errors::RuntimeError,
-    parser::{statements::Statement, ParsedStep, ParsingResult},
+    parser::{
+        statements::{IfStatement, Statement},
+        ParsedStep, ParsingResult,
+    },
     tree::expression::{
         ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
         FactorOperation, Operation, TermOperation, UnaryOperation,
@@ -28,23 +31,27 @@ pub fn interpret_steps(
     steps: Vec<ParsingResult>,
 ) -> Result<(), RuntimeError> {
     for step in steps {
-        match step.unwrap() {
-            ParsedStep::Expression(expr) => {
-                interpret_expression_tree(environment, expr)?;
-            }
-            ParsedStep::Statement(statement) => {
-                // TODO: Find some way to get the line number of a statement
-                interpret_statement(environment, statement, 0)?;
-            }
-            ParsedStep::Block(steps) => {
-                let block_environment = Environment::with_parent(environment);
-
-                interpret_steps(&block_environment, steps)?;
-            }
-        }
+        interpret_step(environment, step.unwrap())?;
     }
 
     Ok(())
+}
+
+fn interpret_step(environment: &Environment, step: ParsedStep) -> Result<(), RuntimeError> {
+    Ok(match step {
+        ParsedStep::Expression(expr) => {
+            interpret_expression_tree(environment, expr)?;
+        }
+        ParsedStep::Statement(statement) => {
+            // TODO: Find some way to get the line number of a statement
+            interpret_statement(environment, statement, 0)?;
+        }
+        ParsedStep::Block(steps) => {
+            let block_environment = Environment::with_parent(environment);
+
+            interpret_steps(&block_environment, steps)?;
+        }
+    })
 }
 
 pub fn interpret_statement(
@@ -56,6 +63,17 @@ pub fn interpret_statement(
         Statement::Print(enclosed_expression) => interpret_print(environment, enclosed_expression)?,
         Statement::Variable(name, value) => {
             interpret_variable_definition(environment, line_number, name, value)?
+        }
+        Statement::If(IfStatement {
+            condition,
+            then_statement,
+            else_statement,
+        }) => {
+            if is_truthy(environment, condition)? {
+                interpret_step(environment, *then_statement)?;
+            } else if else_statement.is_some() {
+                interpret_step(environment, *else_statement.unwrap())?;
+            }
         }
     }
 

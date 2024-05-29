@@ -7,8 +7,9 @@ use crate::tree::expression::{
     FactorOperation, Operation, TermOperation, UnaryOperation,
 };
 
-use self::statements::print_statement;
 
+
+use super::statements::{if_statement, print_statement};
 use super::util::consume_expected_character;
 use super::{
     parse_steps, statements, ExpressionParsingResult, ParsedStep, ParsingResult, TokenIter,
@@ -29,6 +30,7 @@ pub fn statement(tokens: &mut TokenIter) -> ParsingResult {
     match token.unwrap().token_type {
         TokenType::Print => print_statement(tokens),
         TokenType::LeftBrace => block(tokens),
+        TokenType::If => if_statement(tokens),
 
         _ => {
             let expr = expression(tokens)?;

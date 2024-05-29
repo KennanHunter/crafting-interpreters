@@ -3,13 +3,23 @@ use crate::tokens::TokenType;
 use crate::tree::expression::Expression;
 
 use super::{
-    rules::expression, util::consume_expected_character, ParsedStep, ParsingResult, TokenIter,
+    rules::{block, expression},
+    util::consume_expected_character,
+    ParsedStep, ParsingResult, TokenIter,
 };
 
 #[derive(Debug, Clone)]
 pub enum Statement {
     Print(Expression),
     Variable(String, Expression),
+    If(IfStatement),
+}
+
+#[derive(Debug, Clone)]
+pub struct IfStatement {
+    pub condition: Expression,
+    pub then_statement: Box<ParsedStep>,
+    pub else_statement: Option<Box<ParsedStep>>,
 }
 
 pub fn print_statement(tokens: &mut TokenIter) -> ParsingResult {
@@ -56,4 +66,31 @@ pub fn variable_statement(tokens: &mut TokenIter) -> ParsingResult {
         identifier_name.clone(),
         value,
     )))
+}
+
+pub fn if_statement(tokens: &mut TokenIter) -> ParsingResult {
+    consume_expected_character(tokens, TokenType::If)?;
+
+    let condition = expression(tokens)?;
+
+    let then_statement = Box::new(block(tokens)?);
+
+    let else_statement = if tokens
+        .peek()
+        .is_some_and(|token| token.token_type == TokenType::Else)
+    {
+        consume_expected_character(tokens, TokenType::Else)?;
+
+        let else_statement = Box::new(block(tokens)?);
+
+        Some(else_statement)
+    } else {
+        None
+    };
+
+    Ok(ParsedStep::Statement(Statement::If(IfStatement {
+        condition,
+        then_statement,
+        else_statement,
+    })))
 }

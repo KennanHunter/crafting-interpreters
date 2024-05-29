@@ -1,13 +1,9 @@
 let outer = 3;
 
-{
-    print outer;
+if outer > 5  {
+    let inner = "inside variable";
 
-    let inner = outer * 5 + 2;
-
-    print inner;
-
-    {
-        
-    }
+    print "this was true";
+} else {
+    print "this was false";
 }
