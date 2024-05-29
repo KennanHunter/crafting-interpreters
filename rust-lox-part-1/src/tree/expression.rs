@@ -8,6 +8,7 @@ pub enum Expression {
     Grouping(Box<Expression>),
     Variable(ExpressionVariable),
     Assign(ExpressionVariable, Box<Expression>),
+    Call(Box<Expression>, Vec<Expression>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -119,6 +120,16 @@ impl Display for Expression {
             Expression::Assign(name, value) => {
                 write!(f, "( {} <-- {} )", name.identifier_name, value)
             }
+            Expression::Call(callee, arguments) => write!(
+                f,
+                "( {callee}.call( {} ))",
+                arguments
+                    .iter()
+                    .map(|argument_expression| argument_expression.to_string())
+                    .fold(String::new(), |prev, cur_argument| prev
+                        + ", "
+                        + &cur_argument)
+            ),
         }
     }
 }

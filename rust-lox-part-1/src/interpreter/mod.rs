@@ -400,6 +400,7 @@ pub fn interpret_expression_tree(
                 expression_value,
             )
         }
+        Expression::Call(_, _) => todo!(),
     };
 
     return Ok(literal?);

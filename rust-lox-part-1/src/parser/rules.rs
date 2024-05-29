@@ -8,7 +8,7 @@ use crate::tree::expression::{
 };
 
 use super::statements::{if_statement, print_statement, while_statement};
-use super::util::consume_expected_character;
+use super::util::{consume_expected_character, parse_call_arguments};
 use super::{
     parse_steps, statements, ExpressionParsingResult, ParsedStep, ParsingResult, TokenIter,
 };
@@ -318,7 +318,24 @@ pub fn unary(tokens: &mut TokenIter) -> ExpressionParsingResult {
                 line_number: next_token.line_number,
             })))
         }
-        _ => Ok(primary(tokens)?),
+        _ => Ok(call(tokens)?),
+    }
+}
+
+pub fn call(tokens: &mut TokenIter) -> ExpressionParsingResult {
+    let mut left_callee = primary(tokens)?;
+
+    loop {
+        match tokens.peek() {
+            Some(token) if token.token_type == TokenType::LeftParen => {
+                consume_expected_character(tokens, TokenType::LeftParen)?;
+
+                let arguments = parse_call_arguments(tokens)?;
+
+                left_callee = Expression::Call(Box::from(left_callee), arguments);
+            }
+            _ => break Ok(left_callee),
+        }
     }
 }
 
