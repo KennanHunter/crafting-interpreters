@@ -1,3 +1,7 @@
 let epic = "hello";
 
-print epic + " " + "world";
+print epic + " world";
+
+epic = 3 * 5 + 2;
+
+print epic;

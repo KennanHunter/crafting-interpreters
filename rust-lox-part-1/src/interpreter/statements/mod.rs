@@ -5,7 +5,7 @@ use crate::{errors::RuntimeError, tree::expression::Expression};
 use super::{environment::Environment, interpret_expression_tree};
 
 pub fn interpret_print(
-    environment: &Environment,
+    environment: &mut Environment,
     enclosed_expression: Expression,
 ) -> Result<(), RuntimeError> {
     let mut evaluated_string =
@@ -30,11 +30,11 @@ pub fn interpret_variable_definition(
     name: String,
     value: Expression,
 ) -> Result<(), RuntimeError> {
-    environment.variables.define_variable(
-        line_number,
-        name,
-        interpret_expression_tree(&environment, value)?,
-    )?;
+    let evaluated_value = interpret_expression_tree(environment, value)?;
+
+    environment
+        .variables
+        .define_variable(line_number, name, evaluated_value)?;
 
     Ok(())
 }

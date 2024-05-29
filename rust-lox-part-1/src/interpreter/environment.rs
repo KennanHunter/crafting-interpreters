@@ -50,4 +50,22 @@ impl VariableStore {
 
         Ok(())
     }
+
+    pub fn set_variable(
+        &mut self,
+        line_number: usize,
+        name: String,
+        value: ExpressionLiteral,
+    ) -> Result<ExpressionLiteral, RuntimeError> {
+        if !self.map.contains_key(&name) {
+            return Err(RuntimeError {
+                line_number,
+                message: format!("Variable {name} not defined"),
+            });
+        }
+
+        self.map.insert(name, value.clone()).unwrap();
+
+        Ok(value)
+    }
 }

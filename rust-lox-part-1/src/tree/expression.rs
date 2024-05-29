@@ -7,6 +7,7 @@ pub enum Expression {
     Operation(Operation),
     Grouping(Box<Expression>),
     Variable(ExpressionVariable),
+    Assign(ExpressionVariable, Box<Expression>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -105,6 +106,9 @@ impl Display for Expression {
             Expression::Operation(operation) => write!(f, "{}", *operation),
             Expression::Grouping(expression) => write!(f, "( {} )", *expression),
             Expression::Variable(name) => write!(f, "( *{} )", name.identifier_name),
+            Expression::Assign(name, value) => {
+                write!(f, "( {} = {} )", name.identifier_name, value)
+            }
         }
     }
 }

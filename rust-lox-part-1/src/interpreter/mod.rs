@@ -25,7 +25,7 @@ pub fn interpret(blocks: Vec<ParsingResult>) -> Result<(), RuntimeError> {
     for block in blocks {
         match block.unwrap() {
             ParsedBlock::Expression(expr) => {
-                interpret_expression_tree(&environment, expr)?;
+                interpret_expression_tree(&mut environment, expr)?;
             }
             ParsedBlock::Statement(statement) => {
                 // TODO: Find some way to get the line number of a statement
@@ -53,7 +53,7 @@ pub fn interpret_statement(
 }
 
 pub fn interpret_expression_tree(
-    environment: &Environment,
+    environment: &mut Environment,
     tree: Expression,
 ) -> Result<ExpressionLiteral, RuntimeError> {
     let literal: Result<ExpressionLiteral, RuntimeError> = match tree {
@@ -77,7 +77,7 @@ pub fn interpret_expression_tree(
                         message: format!("Tried to Negate invalid literal: {literal}"),
                     }),
                 },
-                expression => interpret_expression_tree(&environment, expression),
+                expression => interpret_expression_tree(environment, expression),
             },
             Operation::Not(UnaryOperation {
                 operand,
@@ -320,12 +320,22 @@ pub fn interpret_expression_tree(
         }) => environment
             .variables
             .get_variable(line_number, identifier_name),
+
+        Expression::Assign(expression_variable, right_side_tree) => {
+            let expression_value = interpret_expression_tree(environment, *right_side_tree)?;
+
+            environment.variables.set_variable(
+                expression_variable.line_number,
+                expression_variable.identifier_name,
+                expression_value,
+            )
+        }
     };
 
     return Ok(literal?);
 }
 
-pub fn is_truthy(environment: &Environment, expr: Expression) -> Result<bool, RuntimeError> {
+pub fn is_truthy(environment: &mut Environment, expr: Expression) -> Result<bool, RuntimeError> {
     match expr {
         Expression::Literal(literal) => match literal {
             ExpressionLiteral::Number(number) => Ok(number != 0.0),
@@ -334,9 +344,10 @@ pub fn is_truthy(environment: &Environment, expr: Expression) -> Result<bool, Ru
             ExpressionLiteral::False => Ok(false),
             ExpressionLiteral::Nil => Ok(false),
         },
-        tree => is_truthy(
-            environment,
-            Expression::Literal(interpret_expression_tree(environment, tree)?),
-        ),
+        tree => {
+            let evaluated_tree = interpret_expression_tree(environment, tree)?;
+
+            is_truthy(environment, Expression::Literal(evaluated_tree))
+        }
     }
 }

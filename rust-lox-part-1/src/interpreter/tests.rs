@@ -18,7 +18,7 @@ fn test_equality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -33,7 +33,7 @@ fn test_inequality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -48,7 +48,7 @@ fn test_invalid_equality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_err());
 }
@@ -61,7 +61,7 @@ fn test_invalid_inequality_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_err());
 }
@@ -70,7 +70,7 @@ fn test_invalid_inequality_operation() {
 fn test_is_number_truthy() {
     let expr = Expression::Literal(ExpressionLiteral::Number(0.1));
 
-    let result = is_truthy(&Environment::default(), expr);
+    let result = is_truthy(&mut Environment::default(), expr);
 
     assert_eq!(result, Ok(true));
 }
@@ -79,7 +79,7 @@ fn test_is_number_truthy() {
 fn test_is_zero_falsy() {
     let expr = Expression::Literal(ExpressionLiteral::Number(0.0));
 
-    let result = is_truthy(&Environment::default(), expr);
+    let result = is_truthy(&mut Environment::default(), expr);
 
     assert_eq!(result, Ok(false));
 }
@@ -90,7 +90,7 @@ fn test_is_string_truthy() {
         "This string should be truthy!".to_owned(),
     ));
 
-    let result = is_truthy(&Environment::default(), expr);
+    let result = is_truthy(&mut Environment::default(), expr);
 
     assert_eq!(result, Ok(true));
 }
@@ -99,7 +99,7 @@ fn test_is_string_truthy() {
 fn test_is_empty_string_falsy() {
     let expr = Expression::Literal(ExpressionLiteral::String("".to_owned()));
 
-    let result = is_truthy(&Environment::default(), expr);
+    let result = is_truthy(&mut Environment::default(), expr);
 
     assert_eq!(result, Ok(false));
 }
@@ -112,7 +112,7 @@ fn test_plus_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -127,7 +127,7 @@ fn test_multiply_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -142,7 +142,7 @@ fn test_less_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -157,7 +157,7 @@ fn test_less_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -172,7 +172,7 @@ fn test_less_equal_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -187,7 +187,7 @@ fn test_less_equal_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -203,7 +203,7 @@ fn test_greater_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -218,7 +218,7 @@ fn test_greater_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -233,7 +233,7 @@ fn test_greater_equal_operation() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 
@@ -248,7 +248,7 @@ fn test_greater_equal_operation_when_equal() {
         line_number: 0,
     }));
 
-    let result = interpret_expression_tree(&Environment::default(), expr);
+    let result = interpret_expression_tree(&mut Environment::default(), expr);
 
     assert!(result.is_ok());
 

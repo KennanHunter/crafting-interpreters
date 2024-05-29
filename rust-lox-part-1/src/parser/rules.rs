@@ -27,12 +27,43 @@ pub fn statement(tokens: &mut TokenIter) -> ParsingResult {
     match token.unwrap().token_type {
         TokenType::Print => print_statement(tokens),
 
-        _ => Ok(ParsedBlock::Expression(expression(tokens)?)),
+        _ => {
+            let expr = expression(tokens)?;
+
+            consume_expected_character(tokens, TokenType::Semicolon)?;
+
+            Ok(ParsedBlock::Expression(expr))
+        }
     }
 }
 
 pub fn expression(tokens: &mut TokenIter) -> ExpressionParsingResult {
-    equality(tokens)
+    assignment(tokens)
+}
+
+pub fn assignment(tokens: &mut TokenIter) -> ExpressionParsingResult {
+    let left_side = equality(tokens)?;
+
+    match tokens.peek().copied() {
+        Some(token) if token.token_type == TokenType::Equal => {
+            // consume equals
+            tokens.next();
+
+            let right_side = assignment(tokens)?;
+
+            match left_side {
+                Expression::Variable(expression_variable) => Ok(Expression::Assign(
+                    expression_variable,
+                    Box::new(right_side),
+                )),
+                _ => Err(ParsingError {
+                    line_number: token.line_number,
+                    message: format!("expected left side of = operator to be identifier"),
+                }),
+            }
+        }
+        _ => Ok(left_side),
+    }
 }
 
 pub fn equality(tokens: &mut TokenIter) -> ExpressionParsingResult {
