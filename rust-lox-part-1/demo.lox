@@ -1,7 +1,9 @@
-let epic = "hello";
+let outer = 3;
 
-print epic + " world";
+{
+    print outer;
 
-epic = 3 * 5 + 2;
+    let inner = outer * 5 + 2;
 
-print epic;
+    print inner;
+}

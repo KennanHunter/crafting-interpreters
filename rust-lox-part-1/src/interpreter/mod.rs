@@ -20,11 +20,11 @@ use self::statements::interpret_print;
 pub fn interpret(steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
     let global_environment = &mut Environment::new();
 
-    interpret_block(global_environment, steps)
+    interpret_steps(global_environment, steps)
 }
 
-pub fn interpret_block<'outer>(
-    environment: &'outer mut Environment<'outer>,
+pub fn interpret_steps(
+    environment: &Environment,
     steps: Vec<ParsingResult>,
 ) -> Result<(), RuntimeError> {
     for step in steps {
@@ -36,7 +36,11 @@ pub fn interpret_block<'outer>(
                 // TODO: Find some way to get the line number of a statement
                 interpret_statement(environment, statement, 0)?;
             }
-            ParsedStep::Block(steps) => todo!(),
+            ParsedStep::Block(steps) => {
+                let block_environment = Environment::with_parent(environment);
+
+                interpret_steps(&block_environment, steps)?;
+            }
         }
     }
 
@@ -44,7 +48,7 @@ pub fn interpret_block<'outer>(
 }
 
 pub fn interpret_statement(
-    environment: &mut Environment,
+    environment: &Environment,
     statement: Statement,
     line_number: usize,
 ) -> Result<(), RuntimeError> {
@@ -59,7 +63,7 @@ pub fn interpret_statement(
 }
 
 pub fn interpret_expression_tree(
-    environment: &mut Environment,
+    environment: &Environment,
     tree: Expression,
 ) -> Result<ExpressionLiteral, RuntimeError> {
     let literal: Result<ExpressionLiteral, RuntimeError> = match tree {
@@ -339,7 +343,7 @@ pub fn interpret_expression_tree(
     return Ok(literal?);
 }
 
-pub fn is_truthy(environment: &mut Environment, expr: Expression) -> Result<bool, RuntimeError> {
+pub fn is_truthy(environment: &Environment, expr: Expression) -> Result<bool, RuntimeError> {
     match expr {
         Expression::Literal(literal) => match literal {
             ExpressionLiteral::Number(number) => Ok(number != 0.0),
