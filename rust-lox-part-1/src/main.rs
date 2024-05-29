@@ -51,6 +51,7 @@ fn run(source: String) {
 
     eprintln!("Parsed tokens into {} blocks", syntax_tree.len());
 
+    // TODO: Check for errors in sub blocks
     let parsing_errors = syntax_tree
         .iter()
         .filter(|&parsed_block| parsed_block.is_err());
