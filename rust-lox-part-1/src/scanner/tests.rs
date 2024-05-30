@@ -336,7 +336,7 @@ fn scan_keywords() {
 
 #[test]
 fn scan_identifiers() {
-    let tokens_result = scan_tokens("fun epic".to_string());
+    let tokens_result = scan_tokens("fun epic complex_char".to_string());
 
     assert!(tokens_result.is_ok());
 
@@ -361,6 +361,17 @@ fn scan_identifiers() {
                 lexeme: "".to_string(),
                 line_number: 1,
                 token_type: TokenType::Identifier("epic".to_string()),
+            })
+        )
+    );
+
+    assert_eq!(
+        tokens.next(),
+        Some(
+            &(Token {
+                lexeme: "".to_string(),
+                line_number: 1,
+                token_type: TokenType::Identifier("complex_char".to_string()),
             })
         )
     );

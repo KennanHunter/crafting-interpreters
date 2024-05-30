@@ -323,20 +323,20 @@ pub fn unary(tokens: &mut TokenIter) -> ExpressionParsingResult {
 }
 
 pub fn call(tokens: &mut TokenIter) -> ExpressionParsingResult {
-    let mut left_callee = primary(tokens)?;
+    let mut expression = primary(tokens)?;
 
     loop {
         match tokens.peek() {
-            Some(token) if token.token_type == TokenType::LeftParen => {
-                consume_expected_character(tokens, TokenType::LeftParen)?;
-
+            Some(&token) if token.token_type == TokenType::LeftParen => {
                 let arguments = parse_call_arguments(tokens)?;
 
-                left_callee = Expression::Call(Box::from(left_callee), arguments);
+                expression = Expression::Call(token.line_number, Box::from(expression), arguments);
             }
-            _ => break Ok(left_callee),
+            _ => break,
         }
     }
+
+    Ok(expression)
 }
 
 pub fn primary(tokens: &mut TokenIter) -> ExpressionParsingResult {

@@ -1,45 +1,32 @@
-use std::time;
+pub mod native;
+use std::{fmt::Debug, rc::Rc};
 
-use crate::tree::expression::ExpressionLiteral;
+use crate::{errors::RuntimeError, tree::expression::ExpressionLiteral};
 
-use super::callable::Callable;
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum CallableReference {
-    Function(CallableFunction),
-    NativeFunction(CallableNativeFunction),
+#[derive(Clone)]
+pub struct CallableReference {
+    pub arity: usize,
+    pub subroutine:
+        Rc<dyn Fn(Vec<ExpressionLiteral>) -> Result<Option<ExpressionLiteral>, RuntimeError>>,
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct CallableFunction();
-
-impl Callable for CallableFunction {
-    fn call(&self) -> ExpressionLiteral {
-        todo!()
-    }
-
-    fn arity(&self) -> usize {
-        todo!()
+impl Debug for CallableReference {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "( func {} )", self.arity)
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum CallableNativeFunction {
-    Now,
-}
-
-impl Callable for CallableNativeFunction {
-    fn call(&self) -> ExpressionLiteral {
-        match self {
-            CallableNativeFunction::Now => {
-                ExpressionLiteral::Number(time::Instant::now().elapsed().as_millis_f64() / 1000f64)
-            }
-        }
+/**
+ * Checks if the references are to the same subroutine
+ */
+impl PartialEq for CallableReference {
+    fn eq(&self, other: &Self) -> bool {
+        self.arity == other.arity && Rc::ptr_eq(&self.subroutine, &other.subroutine)
     }
 
-    fn arity(&self) -> usize {
-        match self {
-            CallableNativeFunction::Now => 0,
-        }
+    fn ne(&self, other: &Self) -> bool {
+        self.arity != other.arity || !Rc::ptr_eq(&self.subroutine, &other.subroutine)
     }
 }
+
+// TODO: Test

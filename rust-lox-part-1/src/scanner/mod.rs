@@ -1,6 +1,9 @@
 pub mod tests;
+mod util;
 
-use std::{iter::Peekable, str::Chars};
+use std::{char, iter::Peekable, str::Chars};
+
+use util::is_valid_literal_character;
 
 use crate::{
     errors::ScanningError,
@@ -218,7 +221,7 @@ fn scan_token(
 
             while characters
                 .peek()
-                .is_some_and(|char| char.is_ascii_alphanumeric())
+                .is_some_and(|&char| is_valid_literal_character(&char))
             {
                 let char = characters.next().unwrap();
                 contained_literal.push(char);

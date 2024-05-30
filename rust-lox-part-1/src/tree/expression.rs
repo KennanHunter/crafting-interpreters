@@ -124,7 +124,7 @@ impl Display for Expression {
             Expression::Assign(name, value) => {
                 write!(f, "( {} <-- {} )", name.identifier_name, value)
             }
-            Expression::Call(callee, arguments) => write!(
+            Expression::Call(_line_number, callee, arguments) => write!(
                 f,
                 "( {callee}.call( {} ))",
                 arguments
@@ -146,7 +146,9 @@ impl Display for ExpressionLiteral {
             ExpressionLiteral::True => write!(f, "true"),
             ExpressionLiteral::False => write!(f, "false"),
             ExpressionLiteral::Nil => write!(f, "nil"),
-            ExpressionLiteral::Reference(_) => todo!(),
+            ExpressionLiteral::Reference(callable_reference) => {
+                write!(f, "@Callable<Arity = {}>", callable_reference.arity)
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+#![feature(fn_traits)]
 #![feature(duration_millis_float)]
 
 pub mod errors;

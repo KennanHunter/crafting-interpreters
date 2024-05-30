@@ -27,14 +27,21 @@ pub fn consume_expected_character(
 }
 
 pub fn parse_call_arguments(tokens: &mut TokenIter) -> Result<Vec<Expression>, ParsingError> {
+    consume_expected_character(tokens, TokenType::LeftParen)?;
+
     let mut arguments: Vec<Expression> = vec![];
 
-    loop {
-        arguments.push(expression(tokens)?);
+    if tokens
+        .peek()
+        .is_some_and(|token| token.token_type != TokenType::RightParen)
+    {
+        arguments.push(expression(tokens)?)
+    }
 
+    loop {
         match tokens.next() {
             Some(delimiter) if delimiter.token_type == TokenType::Comma => {
-                continue;
+                arguments.push(expression(tokens)?);
             }
             Some(delimiter) if delimiter.token_type == TokenType::RightParen => {
                 break;
@@ -51,5 +58,6 @@ pub fn parse_call_arguments(tokens: &mut TokenIter) -> Result<Vec<Expression>, P
             None => unimplemented!(),
         };
     }
+
     Ok(arguments)
 }

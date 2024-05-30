@@ -4,7 +4,10 @@ pub mod functions;
 mod statements;
 mod tests;
 
+use std::ops::Deref;
+
 use environment::Environment;
+use functions::native::create_native_now;
 use statements::interpret_variable_definition;
 
 use crate::{
@@ -19,10 +22,7 @@ use crate::{
     },
 };
 
-use self::{
-    functions::{CallableNativeFunction, CallableReference},
-    statements::interpret_print,
-};
+use self::statements::interpret_print;
 
 // TODO: Test
 pub fn interpret(steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
@@ -31,9 +31,7 @@ pub fn interpret(steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
     global_environment.define_variable(
         0,
         "now".to_owned(),
-        ExpressionLiteral::Reference(CallableReference::NativeFunction(
-            CallableNativeFunction::Now,
-        )),
+        ExpressionLiteral::Reference(create_native_now()),
     )?;
 
     interpret_steps(global_environment, steps)
@@ -415,11 +413,14 @@ pub fn interpret_expression_tree(
         }
         Expression::Call(line_number, callable, arguments) => {
             match interpret_expression_tree(environment, *callable)? {
-                ExpressionLiteral::Reference(reference) => reference,
+                ExpressionLiteral::Reference(reference) => {
+                    evaluate_reference(environment, reference, arguments, line_number)?
+                }
+
                 invalid_type => Err(RuntimeError {
                     line_number,
                     message: format!(
-                        "Expected function or method referece, found {}",
+                        "Expected function or method reference, found {}",
                         invalid_type
                     ),
                 }),
@@ -428,6 +429,30 @@ pub fn interpret_expression_tree(
     };
 
     return Ok(literal?);
+}
+
+fn evaluate_reference(
+    environment: &Environment,
+    reference: functions::CallableReference,
+    arguments: Vec<Expression>,
+    line_number: usize,
+) -> Result<Result<ExpressionLiteral, RuntimeError>, RuntimeError> {
+    let provided_arity = arguments.len();
+    if provided_arity != reference.arity {
+        return Err(RuntimeError {
+            line_number,
+            message: format!(
+                "Expected {} arguments, received {}",
+                reference.arity, provided_arity
+            ),
+        });
+    };
+    let evaluated_args = arguments
+        .into_iter()
+        .map(|expr| interpret_expression_tree(environment, expr))
+        .collect::<Result<Vec<ExpressionLiteral>, RuntimeError>>()?;
+    let ret = Fn::call(reference.subroutine.deref(), (evaluated_args,))?;
+    Ok(Ok(ret.unwrap_or(ExpressionLiteral::Nil)))
 }
 
 pub fn is_truthy(environment: &Environment, expr: Expression) -> Result<bool, RuntimeError> {

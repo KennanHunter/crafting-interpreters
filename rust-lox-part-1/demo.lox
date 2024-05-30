@@ -1,1 +1,4 @@
-epic(5 * 5);
+let starting_time = now();
+
+print "this is the current unix epoch:";
+print starting_time;
