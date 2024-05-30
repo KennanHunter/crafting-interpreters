@@ -1,4 +1,6 @@
+pub mod callable;
 mod environment;
+pub mod functions;
 mod statements;
 mod tests;
 
@@ -17,11 +19,22 @@ use crate::{
     },
 };
 
-use self::statements::interpret_print;
+use self::{
+    functions::{CallableNativeFunction, CallableReference},
+    statements::interpret_print,
+};
 
 // TODO: Test
 pub fn interpret(steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
     let global_environment = &mut Environment::new();
+
+    global_environment.define_variable(
+        0,
+        "now".to_owned(),
+        ExpressionLiteral::Reference(CallableReference::NativeFunction(
+            CallableNativeFunction::Now,
+        )),
+    )?;
 
     interpret_steps(global_environment, steps)
 }
@@ -400,7 +413,18 @@ pub fn interpret_expression_tree(
                 expression_value,
             )
         }
-        Expression::Call(_, _) => todo!(),
+        Expression::Call(line_number, callable, arguments) => {
+            match interpret_expression_tree(environment, *callable)? {
+                ExpressionLiteral::Reference(reference) => reference,
+                invalid_type => Err(RuntimeError {
+                    line_number,
+                    message: format!(
+                        "Expected function or method referece, found {}",
+                        invalid_type
+                    ),
+                }),
+            }
+        }
     };
 
     return Ok(literal?);
@@ -414,6 +438,7 @@ pub fn is_truthy(environment: &Environment, expr: Expression) -> Result<bool, Ru
             ExpressionLiteral::True => Ok(true),
             ExpressionLiteral::False => Ok(false),
             ExpressionLiteral::Nil => Ok(false),
+            ExpressionLiteral::Reference(_) => Ok(true),
         },
         tree => {
             let evaluated_tree = interpret_expression_tree(environment, tree)?;

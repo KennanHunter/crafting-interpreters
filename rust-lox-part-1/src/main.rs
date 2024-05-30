@@ -1,3 +1,5 @@
+#![feature(duration_millis_float)]
+
 pub mod errors;
 pub mod interpreter;
 pub mod parser;

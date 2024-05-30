@@ -1,6 +1,8 @@
 use core::fmt;
 use std::fmt::{Display, Formatter};
 
+use crate::interpreter::functions::CallableReference;
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
     Literal(ExpressionLiteral),
@@ -8,7 +10,7 @@ pub enum Expression {
     Grouping(Box<Expression>),
     Variable(ExpressionVariable),
     Assign(ExpressionVariable, Box<Expression>),
-    Call(Box<Expression>, Vec<Expression>),
+    Call(usize, Box<Expression>, Vec<Expression>),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -24,6 +26,7 @@ pub enum ExpressionLiteral {
     True,
     False,
     Nil,
+    Reference(CallableReference),
 }
 
 impl ExpressionLiteral {
@@ -44,6 +47,7 @@ impl ExpressionLiteral {
                 ExpressionLiteral::Nil => true,
                 _ => false,
             },
+            ExpressionLiteral::Reference(_) => false,
         }
     }
 }
@@ -142,6 +146,7 @@ impl Display for ExpressionLiteral {
             ExpressionLiteral::True => write!(f, "true"),
             ExpressionLiteral::False => write!(f, "false"),
             ExpressionLiteral::Nil => write!(f, "nil"),
+            ExpressionLiteral::Reference(_) => todo!(),
         }
     }
 }

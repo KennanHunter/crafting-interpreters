@@ -1,7 +1,7 @@
 use crate::tree::expression::ExpressionLiteral;
 
 pub trait Callable {
-    fn call() -> ExpressionLiteral;
+    fn call(&self) -> ExpressionLiteral;
 
-    fn arity() -> usize;
+    fn arity(&self) -> usize;
 }
