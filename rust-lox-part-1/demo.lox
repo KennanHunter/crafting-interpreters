@@ -1,22 +1,10 @@
-let external = 0;
+let a = "global";
+{
+  fun showA() {
+    print a;
+  }
 
-fun epic() {
-    print "inside func";
-
-    let internal = 0;
-
-    external = external + 1;
-    internal = internal + 1;
-
-    print "external";
-    print external;
-
-    print "internal";
-    print internal;
-
-    return internal;
+  showA();
+  let a = "block";
+  showA();
 }
-
-epic();
-epic();
-epic();

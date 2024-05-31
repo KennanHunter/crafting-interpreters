@@ -1,14 +1,15 @@
-pub mod callable;
 mod environment;
 pub mod functions;
 mod statements;
 mod tests;
+mod types;
 
 use std::{borrow::Borrow, cell::RefCell, iter::zip, ops::Deref, rc::Rc};
 
 use environment::{Environment, EnvironmentRef};
 use functions::{native::create_native_now, CallableReference};
 use statements::interpret_variable_definition;
+use types::BlockReturn;
 
 use crate::{
     errors::RuntimeError,
@@ -34,33 +35,46 @@ pub fn interpret(steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
         ExpressionLiteral::Reference(create_native_now()),
     )?;
 
-    interpret_steps(Rc::new(RefCell::new(global_environment)), steps)
+    interpret_steps(Rc::new(RefCell::new(global_environment)), steps)?;
+
+    Ok(())
 }
 
 pub fn interpret_steps(
     environment: EnvironmentRef,
     steps: Vec<ParsingResult>,
-) -> Result<(), RuntimeError> {
+) -> Result<BlockReturn, RuntimeError> {
     for step in steps {
-        interpret_step(environment.clone(), step.unwrap())?;
+        match interpret_step(environment.clone(), step.unwrap())? {
+            BlockReturn::Returned(Some(returned)) => {
+                return Ok(BlockReturn::Returned(Some(returned)))
+            }
+            BlockReturn::Returned(None) => return Ok(BlockReturn::Returned(None)),
+            BlockReturn::NoReturn => continue,
+        }
     }
 
-    Ok(())
+    Ok(BlockReturn::NoReturn)
 }
 
-fn interpret_step(environment: EnvironmentRef, step: ParsedStep) -> Result<(), RuntimeError> {
+fn interpret_step(
+    environment: EnvironmentRef,
+    step: ParsedStep,
+) -> Result<BlockReturn, RuntimeError> {
     Ok(match step {
         ParsedStep::Expression(expr) => {
             interpret_expression_tree(environment.clone(), expr)?;
+
+            BlockReturn::NoReturn
         }
         ParsedStep::Statement(statement) => {
             // TODO: Find some way to get the line number of a statement
-            interpret_statement(environment, statement, 0)?;
+            interpret_statement(environment, statement, 0)?
         }
         ParsedStep::Block(steps) => {
             let block_environment = Rc::new(RefCell::new(Environment::with_parent(environment)));
 
-            interpret_steps(block_environment, steps)?;
+            interpret_steps(block_environment, steps)?
         }
     })
 }
@@ -69,7 +83,7 @@ pub fn interpret_statement(
     environment: EnvironmentRef,
     statement: Statement,
     line_number: usize,
-) -> Result<(), RuntimeError> {
+) -> Result<BlockReturn, RuntimeError> {
     match statement {
         Statement::Print(enclosed_expression) => interpret_print(environment, enclosed_expression)?,
         Statement::Variable(name, value) => {
@@ -100,9 +114,7 @@ pub fn interpret_statement(
             let func = ExpressionLiteral::Reference(CallableReference {
                 arity: function_definition.parameters.len(),
                 subroutine: Rc::new(
-                    move |call_line_number,
-                          args|
-                          -> Result<Option<ExpressionLiteral>, RuntimeError> {
+                    move |call_line_number, args| -> Result<BlockReturn, RuntimeError> {
                         let env = Environment::with_parent(function_parent_environment.clone());
                         let function_environment = Rc::new(RefCell::new(env.clone()));
 
@@ -114,9 +126,7 @@ pub fn interpret_statement(
                             )?;
                         }
 
-                        interpret_step(function_environment, *function_body.clone())?;
-
-                        Ok(None)
+                        return interpret_step(function_environment, *function_body.clone());
                     },
                 ),
             });
@@ -124,10 +134,17 @@ pub fn interpret_statement(
             let env: &RefCell<Environment> = environment.borrow();
             env.borrow().define_variable(line_number, name, func)?;
         }
-        Statement::Return(_) => todo!(),
+        Statement::Return(optional_expression) => match optional_expression {
+            Some(expression) => {
+                let returned = interpret_expression_tree(environment, expression)?;
+
+                return Ok(BlockReturn::Returned(Some(returned)));
+            }
+            None => return Ok(BlockReturn::Returned(None)),
+        },
     }
 
-    Ok(())
+    Ok(BlockReturn::NoReturn)
 }
 
 pub fn interpret_expression_tree(
@@ -454,9 +471,8 @@ pub fn interpret_expression_tree(
         Expression::Call(line_number, callable, arguments) => {
             match interpret_expression_tree(environment.clone(), *callable)? {
                 ExpressionLiteral::Reference(reference) => {
-                    evaluate_reference(environment, reference, arguments, line_number)?
+                    evaluate_reference(environment, reference, arguments, line_number)
                 }
-
                 invalid_type => Err(RuntimeError {
                     line_number,
                     message: format!(
@@ -476,7 +492,7 @@ fn evaluate_reference(
     reference: functions::CallableReference,
     arguments: Vec<Expression>,
     line_number: usize,
-) -> Result<Result<ExpressionLiteral, RuntimeError>, RuntimeError> {
+) -> Result<ExpressionLiteral, RuntimeError> {
     let provided_arity = arguments.len();
 
     if provided_arity != reference.arity {
@@ -496,7 +512,10 @@ fn evaluate_reference(
 
     let ret = Fn::call(reference.subroutine.deref(), (line_number, evaluated_args))?;
 
-    Ok(Ok(ret.unwrap_or(ExpressionLiteral::Nil)))
+    match ret {
+        BlockReturn::Returned(Some(value)) => Ok(value),
+        BlockReturn::Returned(None) | BlockReturn::NoReturn => Ok(ExpressionLiteral::Nil),
+    }
 }
 
 pub fn is_truthy(environment: EnvironmentRef, expr: Expression) -> Result<bool, RuntimeError> {

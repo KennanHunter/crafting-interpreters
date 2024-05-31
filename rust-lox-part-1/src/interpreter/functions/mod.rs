@@ -3,12 +3,12 @@ use std::{fmt::Debug, rc::Rc};
 
 use crate::{errors::RuntimeError, tree::expression::ExpressionLiteral};
 
+use super::types::BlockReturn;
+
 #[derive(Clone)]
 pub struct CallableReference {
     pub arity: usize,
-    pub subroutine: Rc<
-        dyn Fn(usize, Vec<ExpressionLiteral>) -> Result<Option<ExpressionLiteral>, RuntimeError>,
-    >,
+    pub subroutine: Rc<dyn Fn(usize, Vec<ExpressionLiteral>) -> Result<BlockReturn, RuntimeError>>,
 }
 
 impl Debug for CallableReference {
