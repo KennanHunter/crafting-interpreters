@@ -124,6 +124,7 @@ pub fn interpret_statement(
             let env: &RefCell<Environment> = environment.borrow();
             env.borrow().define_variable(line_number, name, func)?;
         }
+        Statement::Return(_) => todo!(),
     }
 
     Ok(())

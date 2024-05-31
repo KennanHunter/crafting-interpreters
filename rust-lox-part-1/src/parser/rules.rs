@@ -8,7 +8,8 @@ use crate::tree::expression::{
 };
 
 use super::statements::{
-    function_declaration_statement, if_statement, print_statement, while_statement,
+    function_declaration_statement, if_statement, print_statement, return_statement,
+    while_statement,
 };
 use super::util::{consume_expected_character, parse_call_arguments};
 use super::{
@@ -33,6 +34,7 @@ pub fn statement(tokens: &mut TokenIter) -> ParsingResult {
         TokenType::LeftBrace => block(tokens),
         TokenType::If => if_statement(tokens),
         TokenType::While => while_statement(tokens),
+        TokenType::Return => return_statement(tokens),
 
         _ => {
             let expr = expression(tokens)?;

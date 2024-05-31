@@ -13,6 +13,8 @@ fun epic() {
 
     print "internal";
     print internal;
+
+    return internal;
 }
 
 epic();

@@ -17,6 +17,7 @@ pub enum Statement {
     If(IfStatement),
     While(WhileStatement),
     Fun(FunStatement),
+    Return(Option<Expression>),
 }
 
 #[derive(Debug, Clone)]
@@ -179,4 +180,23 @@ pub fn while_statement(tokens: &mut TokenIter) -> ParsingResult {
         condition,
         body,
     })))
+}
+
+pub fn return_statement(tokens: &mut TokenIter) -> ParsingResult {
+    consume_expected_character(tokens, TokenType::Return)?;
+
+    if tokens
+        .peek()
+        .is_some_and(|token| token.token_type == TokenType::Semicolon)
+    {
+        consume_expected_character(tokens, TokenType::Semicolon)?;
+
+        return Ok(ParsedStep::Statement(Statement::Return(None)));
+    }
+
+    let expr = expression(tokens)?;
+
+    consume_expected_character(tokens, TokenType::Semicolon)?;
+
+    Ok(ParsedStep::Statement(Statement::Return(Some(expr))))
 }
