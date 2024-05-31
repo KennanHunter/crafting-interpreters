@@ -7,7 +7,9 @@ use crate::tree::expression::{
     FactorOperation, LogicalOperation, Operation, TermOperation, UnaryOperation,
 };
 
-use super::statements::{if_statement, print_statement, while_statement};
+use super::statements::{
+    function_declaration_statement, if_statement, print_statement, while_statement,
+};
 use super::util::{consume_expected_character, parse_call_arguments};
 use super::{
     parse_steps, statements, ExpressionParsingResult, ParsedStep, ParsingResult, TokenIter,
@@ -18,6 +20,7 @@ pub fn declaration(tokens: &mut TokenIter) -> ParsingResult {
 
     match token.unwrap().token_type {
         TokenType::Let => variable_statement(tokens),
+        TokenType::Fun => function_declaration_statement(tokens),
         _ => statement(tokens),
     }
 }

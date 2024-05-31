@@ -65,7 +65,7 @@ fn run(source: String) {
         let error = error_res.clone().unwrap_err();
 
         eprintln!(
-            "Error appeared at line number {} with issue: {}",
+            "Parsing error appeared at line number {} with issue: {}",
             error.line_number, error.message
         );
 

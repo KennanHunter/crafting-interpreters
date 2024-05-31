@@ -1,4 +1,20 @@
-let starting_time = now();
+let external = 0;
 
-print "this is the current unix epoch:";
-print starting_time;
+fun epic() {
+    print "inside func";
+
+    let internal = 0;
+
+    external = external + 1;
+    internal = internal + 1;
+
+    print "external";
+    print external;
+
+    print "internal";
+    print internal;
+}
+
+epic();
+epic();
+epic();

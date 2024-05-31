@@ -1,3 +1,5 @@
+use std::mem;
+
 use crate::{
     errors::ParsingError,
     tokens::{Token, TokenType},
@@ -11,7 +13,11 @@ pub fn consume_expected_character(
     expected_token_type: TokenType,
 ) -> Result<Token, ParsingError> {
     match tokens.next() {
-        Some(token) if token.token_type == expected_token_type => Ok(token.clone()),
+        Some(token)
+            if mem::discriminant(&token.token_type) == mem::discriminant(&expected_token_type) =>
+        {
+            Ok(token.clone())
+        }
         Some(unrecognized_token) => Err(ParsingError {
             message: format!(
                 "Expected {:?}, found \"{:?}\"",

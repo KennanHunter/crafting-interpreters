@@ -6,8 +6,9 @@ use crate::{errors::RuntimeError, tree::expression::ExpressionLiteral};
 #[derive(Clone)]
 pub struct CallableReference {
     pub arity: usize,
-    pub subroutine:
-        Rc<dyn Fn(Vec<ExpressionLiteral>) -> Result<Option<ExpressionLiteral>, RuntimeError>>,
+    pub subroutine: Rc<
+        dyn Fn(usize, Vec<ExpressionLiteral>) -> Result<Option<ExpressionLiteral>, RuntimeError>,
+    >,
 }
 
 impl Debug for CallableReference {
