@@ -4,6 +4,7 @@
 pub mod errors;
 pub mod interpreter;
 pub mod parser;
+pub mod resolver;
 pub mod scanner;
 pub mod tokens;
 pub mod tree;
@@ -12,6 +13,7 @@ use std::{env, fs, time};
 
 use interpreter::interpret;
 use parser::{parse, ParsingResult};
+use resolver::{resolve, VariableMap};
 use scanner::scan_tokens;
 
 fn main() {
@@ -45,6 +47,7 @@ fn read_file(file_name: &str) -> String {
 /// Core function that takes in the raw source code and does stuff
 ///
 // #[warn(unused_variables)]
+// TODO: Rework this whole function
 fn run(source: String) {
     let tokens = scan_tokens(source).unwrap();
 
@@ -76,11 +79,23 @@ fn run(source: String) {
         return;
     }
 
+    let resolved_variable_map: VariableMap = match resolve(syntax_tree.clone()) {
+        Ok(map) => dbg!(map),
+        Err(err) => {
+            eprintln!(
+                "Failed to resolve at line {} with message {}",
+                err.line_number, err.message
+            );
+
+            return;
+        }
+    };
+
     let starting_time = time::Instant::now();
 
     eprintln!("\n---- output ----");
 
-    match interpret(syntax_tree) {
+    match interpret(resolved_variable_map, syntax_tree) {
         Ok(_) => eprintln!(
             "---- program finished ----\n\nExecuted in {}μs",
             starting_time.elapsed().as_micros()

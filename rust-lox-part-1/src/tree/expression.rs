@@ -13,7 +13,7 @@ pub enum Expression {
     Call(usize, Box<Expression>, Vec<Expression>),
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct ExpressionVariable {
     pub line_number: usize,
     pub identifier_name: String,

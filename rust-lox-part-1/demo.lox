@@ -1,10 +1,9 @@
-let a = "global";
-{
-  fun showA() {
-    print a;
-  }
+let a = "epic";
 
-  showA();
-  let a = "block";
-  showA();
+fun gamer() {
+    print a;
 }
+
+print a;
+
+gamer();

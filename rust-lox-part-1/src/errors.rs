@@ -50,3 +50,20 @@ impl fmt::Display for ParsingError {
         )
     }
 }
+
+/// Error to report issues at the parsing stage
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct ResolvingError {
+    pub line_number: usize,
+    pub message: String,
+}
+
+impl fmt::Display for ResolvingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Resolution failed at line {}, \n {}",
+            self.line_number, self.message
+        )
+    }
+}

@@ -17,8 +17,9 @@ use crate::{
         statements::{IfStatement, Statement, WhileStatement},
         ParsedStep, ParsingResult,
     },
+    resolver::VariableMap,
     tree::expression::{
-        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, ExpressionVariable,
+        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral,
         FactorOperation, LogicalOperation, Operation, TermOperation, UnaryOperation,
     },
 };
@@ -26,8 +27,8 @@ use crate::{
 use self::statements::interpret_print;
 
 // TODO: Test
-pub fn interpret(steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
-    let global_environment = Environment::new();
+pub fn interpret(variable_map: VariableMap, steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
+    let global_environment = Environment::with_resolved_variable_map(variable_map);
 
     global_environment.define_variable(
         0,
@@ -448,13 +449,10 @@ pub fn interpret_expression_tree(
                 return Ok(interpret_expression_tree(environment, *right)?);
             }
         },
-        Expression::Variable(ExpressionVariable {
-            line_number,
-            identifier_name,
-        }) => {
+        Expression::Variable(var) => {
             let env: &RefCell<Environment> = environment.borrow();
 
-            env.borrow().get_variable(line_number, identifier_name)
+            env.borrow().look_up_variable(var)
         }
 
         Expression::Assign(expression_variable, right_side_tree) => {
