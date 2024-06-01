@@ -80,7 +80,7 @@ impl Environment {
                 }
             }
             0 => {
-                let read_variable = dbg!(self.active_variable_map.borrow()).get(&name).cloned();
+                let read_variable = self.active_variable_map.borrow().get(&name).cloned();
 
                 if let Some(literal) = read_variable {
                     return Ok(literal.clone());
@@ -131,9 +131,42 @@ impl Environment {
             });
         }
 
-        self.active_variable_map.borrow_mut().insert(name, value.clone()).unwrap();
+        self.active_variable_map
+            .borrow_mut()
+            .insert(name, value.clone())
+            .unwrap();
 
         Ok(value)
+    }
+
+    pub fn set_variable_at(
+        &self,
+        line_number: usize,
+        name: String,
+        value: ExpressionLiteral,
+        depth: usize,
+    ) -> Result<ExpressionLiteral, RuntimeError> {
+        match depth {
+            1.. => {
+                if let Some(parent_environment) = &self.parent_environment {
+                    return parent_environment.borrow_mut().set_variable_at(
+                        line_number,
+                        name,
+                        value,
+                        depth - 1,
+                    );
+                } else {
+                    unreachable!("parent environment referenced but does not exist")
+                }
+            }
+            0 => {
+                self.active_variable_map
+                    .borrow_mut()
+                    .insert(name, value.clone());
+
+                Ok(value)
+            }
+        }
     }
 
     fn get_variable_map(&self) -> Rc<VariableMap> {
@@ -146,7 +179,7 @@ impl Environment {
         }
     }
 
-    pub fn look_up_variable(
+    pub fn get_variable_with_depth(
         &self,
         variable: ExpressionVariable,
     ) -> Result<ExpressionLiteral, RuntimeError> {
@@ -155,6 +188,25 @@ impl Environment {
         match potential_depth {
             Some(depth) => {
                 self.get_variable_at(variable.line_number, variable.identifier_name, depth)
+            }
+            None => Err(RuntimeError {
+                line_number: variable.line_number,
+                // TODO: err
+                message: format!("Something fucked up"),
+            }),
+        }
+    }
+
+    pub fn set_variable_with_depth(
+        &mut self,
+        variable: ExpressionVariable,
+        value: ExpressionLiteral,
+    ) -> Result<ExpressionLiteral, RuntimeError> {
+        let potential_depth = self.get_variable_map().get(&variable).cloned();
+
+        match potential_depth {
+            Some(depth) => {
+                self.set_variable_at(variable.line_number, variable.identifier_name, value, depth)
             }
             None => Err(RuntimeError {
                 line_number: variable.line_number,
@@ -192,7 +244,12 @@ mod tests {
             .borrow_mut()
             .insert("test".to_owned(), ExpressionLiteral::True);
 
-        let value = parent.borrow().active_variable_map.borrow().get("test").cloned();
+        let value = parent
+            .borrow()
+            .active_variable_map
+            .borrow()
+            .get("test")
+            .cloned();
 
         assert_eq!(value, Some(ExpressionLiteral::True))
     }

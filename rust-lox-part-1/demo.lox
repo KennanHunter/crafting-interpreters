@@ -1,9 +1,4 @@
-let a = "epic";
-
-fun gamer() {
-    print a;
+fun bad() {
 }
 
-print a;
-
-gamer();
+return "at top level";

@@ -41,6 +41,19 @@ impl ScopeStack {
         }
     }
 
+        /// Checks if a variable has been defined in it's local scope
+        pub fn is_locally_defined(&self, name: &String) -> bool {
+            if let Some(map) = self.stack.last() {
+                match map.get(name) {
+                    Some(defined) => *defined,
+                    None => false,
+                }
+            } else {
+                false
+            }
+        }
+    
+
     pub fn begin_scope(&mut self) {
         let scope = Scope::default();
 

@@ -452,7 +452,7 @@ pub fn interpret_expression_tree(
         Expression::Variable(var) => {
             let env: &RefCell<Environment> = environment.borrow();
 
-            env.borrow().look_up_variable(var)
+            env.borrow().get_variable_with_depth(var)
         }
 
         Expression::Assign(expression_variable, right_side_tree) => {

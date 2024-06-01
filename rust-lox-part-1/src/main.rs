@@ -80,7 +80,7 @@ fn run(source: String) {
     }
 
     let resolved_variable_map: VariableMap = match resolve(syntax_tree.clone()) {
-        Ok(map) => dbg!(map),
+        Ok(map) => map,
         Err(err) => {
             eprintln!(
                 "Failed to resolve at line {} with message {}",
