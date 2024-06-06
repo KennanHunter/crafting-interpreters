@@ -81,6 +81,14 @@ fn resolve_expression(scope_stack: &mut ScopeStack, expr: Expression) -> Resolve
                 resolve_expression(scope_stack, arg)?;
             }
         }
+        Expression::Get(_, expr, _) => {
+            resolve_expression(scope_stack, *expr)?;
+        }
+        Expression::Set(_, expr, _, value) => {
+            resolve_expression(scope_stack, *expr)?;
+
+            resolve_expression(scope_stack, *value)?;
+        }
     }
 
     Ok(())
@@ -162,6 +170,10 @@ fn resolve_statement(scope_stack: &mut ScopeStack, stmt: Statement) -> ResolveRe
             if expr.is_some() {
                 resolve_expression(scope_stack, expr.unwrap())?;
             }
+        }
+        Statement::Class(class) => {
+            scope_stack.declare(class.name.clone());
+            scope_stack.define(class.name);
         }
     }
 

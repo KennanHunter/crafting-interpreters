@@ -1,4 +1,7 @@
-fun bad() {
-}
+class foo {}
 
-return "at top level";
+let bar = foo();
+
+bar.gamer = "hi";
+
+print bar.gamer;

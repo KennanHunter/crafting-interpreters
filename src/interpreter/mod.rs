@@ -7,7 +7,9 @@ mod types;
 use std::{borrow::Borrow, cell::RefCell, iter::zip, ops::Deref, rc::Rc};
 
 use environment::{Environment, EnvironmentRef};
-use functions::{native::create_native_now, CallableReference};
+use functions::{
+    native::create_native_now, CallableReference, ClassReference, InstanceReference, Reference,
+};
 use statements::interpret_variable_definition;
 use types::BlockReturn;
 
@@ -19,8 +21,8 @@ use crate::{
     },
     resolver::VariableMap,
     tree::expression::{
-        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral,
-        FactorOperation, LogicalOperation, Operation, TermOperation, UnaryOperation,
+        ComparisonOperation, EqualityOperation, Expression, ExpressionLiteral, FactorOperation,
+        LogicalOperation, Operation, TermOperation, UnaryOperation,
     },
 };
 
@@ -33,7 +35,7 @@ pub fn interpret(variable_map: VariableMap, steps: Vec<ParsingResult>) -> Result
     global_environment.define_variable(
         0,
         "now".to_owned(),
-        ExpressionLiteral::Reference(create_native_now()),
+        ExpressionLiteral::Reference(Reference::CallableReference(create_native_now())),
     )?;
 
     interpret_steps(Rc::new(RefCell::new(global_environment)), steps)?;
@@ -112,25 +114,26 @@ pub fn interpret_statement(
 
             let name = function_definition.name.clone();
 
-            let func = ExpressionLiteral::Reference(CallableReference {
-                arity: function_definition.parameters.len(),
-                subroutine: Rc::new(
-                    move |call_line_number, args| -> Result<BlockReturn, RuntimeError> {
-                        let env = Environment::with_parent(function_parent_environment.clone());
-                        let function_environment = Rc::new(RefCell::new(env.clone()));
+            let func =
+                ExpressionLiteral::Reference(Reference::CallableReference(CallableReference {
+                    arity: function_definition.parameters.len(),
+                    subroutine: Rc::new(
+                        move |call_line_number, args| -> Result<BlockReturn, RuntimeError> {
+                            let env = Environment::with_parent(function_parent_environment.clone());
+                            let function_environment = Rc::new(RefCell::new(env.clone()));
 
-                        for (name, value) in zip(function_definition.clone().parameters, args) {
-                            (function_environment).borrow_mut().define_variable(
-                                call_line_number,
-                                name,
-                                value,
-                            )?;
-                        }
+                            for (name, value) in zip(function_definition.clone().parameters, args) {
+                                (function_environment).borrow_mut().define_variable(
+                                    call_line_number,
+                                    name,
+                                    value,
+                                )?;
+                            }
 
-                        return interpret_step(function_environment, *function_body.clone());
-                    },
-                ),
-            });
+                            return interpret_step(function_environment, *function_body.clone());
+                        },
+                    ),
+                }));
 
             let env: &RefCell<Environment> = environment.borrow();
             env.borrow().define_variable(line_number, name, func)?;
@@ -143,6 +146,17 @@ pub fn interpret_statement(
             }
             None => return Ok(BlockReturn::Returned(None)),
         },
+        Statement::Class(class) => {
+            let env: &RefCell<Environment> = environment.borrow();
+
+            env.borrow().define_variable(
+                line_number,
+                class.name.clone(),
+                ExpressionLiteral::Reference(Reference::ClassReference(ClassReference {
+                    name: class.name,
+                })),
+            )?;
+        }
     }
 
     Ok(BlockReturn::NoReturn)
@@ -468,9 +482,27 @@ pub fn interpret_expression_tree(
         }
         Expression::Call(line_number, callable, arguments) => {
             match interpret_expression_tree(environment.clone(), *callable)? {
-                ExpressionLiteral::Reference(reference) => {
-                    evaluate_reference(environment, reference, arguments, line_number)
-                }
+                ExpressionLiteral::Reference(reference) => match reference {
+                    Reference::CallableReference(callable_reference) => {
+                        evaluate_callable_reference(
+                            environment,
+                            callable_reference,
+                            arguments,
+                            line_number,
+                        )
+                    }
+                    Reference::ClassReference(class) => {
+                        let instance = InstanceReference::instantiate(class);
+
+                        let reference = Reference::InstanceReference(instance);
+
+                        Ok(ExpressionLiteral::Reference(reference))
+                    }
+                    Reference::InstanceReference(_) => Err(RuntimeError {
+                        line_number,
+                        message: format!("Can't call a class instance, only a class type"),
+                    }),
+                },
                 invalid_type => Err(RuntimeError {
                     line_number,
                     message: format!(
@@ -480,14 +512,59 @@ pub fn interpret_expression_tree(
                 }),
             }
         }
+        Expression::Get(line_number, object_expression, identifier) => {
+            let object = interpret_expression_tree(environment, *object_expression)?;
+
+            match object {
+                ExpressionLiteral::Reference(reference) => match reference {
+                    Reference::InstanceReference(instance) => {
+                        instance.get_property(line_number, &identifier)
+                    }
+                    Reference::ClassReference(_) => Err(RuntimeError {
+                        line_number,
+                        message: format!("Can't access properties on a class, only an instance"),
+                    }),
+                    _ => Err(RuntimeError {
+                        line_number,
+                        message: format!("Can only access properties on a instance"),
+                    }),
+                },
+                _ => Err(RuntimeError {
+                    line_number,
+                    message: format!("Can only access properties on a instance"),
+                }),
+            }
+        }
+        Expression::Set(line_number, object_expression, identifier, value) => {
+            let object = interpret_expression_tree(environment.clone(), *object_expression)?;
+
+            match object {
+                ExpressionLiteral::Reference(reference) => match reference {
+                    Reference::InstanceReference(instance) => instance
+                        .set_property(identifier, interpret_expression_tree(environment, *value)?),
+                    Reference::ClassReference(_) => Err(RuntimeError {
+                        line_number,
+                        message: format!("Can't access properties on a class, only an instance"),
+                    }),
+                    _ => Err(RuntimeError {
+                        line_number,
+                        message: format!("Can only access properties on a instance"),
+                    }),
+                },
+                _ => Err(RuntimeError {
+                    line_number,
+                    message: format!("Can only access properties on a instance"),
+                }),
+            }
+        }
     };
 
     return Ok(literal?);
 }
 
-fn evaluate_reference(
+fn evaluate_callable_reference(
     environment: EnvironmentRef,
-    reference: functions::CallableReference,
+    reference: CallableReference,
     arguments: Vec<Expression>,
     line_number: usize,
 ) -> Result<ExpressionLiteral, RuntimeError> {

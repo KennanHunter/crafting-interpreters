@@ -18,6 +18,7 @@ pub enum Statement {
     While(WhileStatement),
     Fun(FunStatement),
     Return(Option<Expression>),
+    Class(ClassStatement),
 }
 
 #[derive(Debug, Clone)]
@@ -25,6 +26,12 @@ pub struct FunStatement {
     pub name: String,
     pub parameters: Vec<String>,
     pub body: Box<ParsedStep>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ClassStatement {
+    pub name: String,
+    pub methods: Vec<FunStatement>,
 }
 
 #[derive(Debug, Clone)]
@@ -139,6 +146,49 @@ pub fn function_declaration_statement(tokens: &mut TokenIter) -> ParsingResult {
         name: function_name,
         parameters,
         body,
+    })))
+}
+
+pub fn class_declaration_statement(tokens: &mut TokenIter) -> ParsingResult {
+    consume_expected_character(tokens, TokenType::Class)?;
+
+    let class_identifier = tokens.next().unwrap();
+    let class_name = match &class_identifier.token_type {
+        TokenType::Identifier(name) => name.clone(),
+        unknown => {
+            return Err(ParsingError {
+                line_number: class_identifier.line_number,
+                message: format!("Expected class name, found {:?}", unknown),
+            })
+        }
+    };
+
+    consume_expected_character(tokens, TokenType::LeftBrace)?;
+
+    let mut methods: Vec<FunStatement> = Vec::new();
+
+    loop {
+        if tokens
+            .peek()
+            .is_some_and(|token| token.token_type == TokenType::RightBrace)
+        {
+            break;
+        }
+
+        match function_declaration_statement(tokens)? {
+            ParsedStep::Statement(stmt) => match stmt {
+                Statement::Fun(function) => methods.push(function),
+                _ => unreachable!(),
+            },
+            _ => unreachable!(),
+        }
+    }
+
+    consume_expected_character(tokens, TokenType::RightBrace)?;
+
+    Ok(ParsedStep::Statement(Statement::Class(ClassStatement {
+        name: class_name,
+        methods,
     })))
 }
 

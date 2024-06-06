@@ -8,8 +8,8 @@ use crate::tree::expression::{
 };
 
 use super::statements::{
-    function_declaration_statement, if_statement, print_statement, return_statement,
-    while_statement,
+    class_declaration_statement, function_declaration_statement, if_statement, print_statement,
+    return_statement, while_statement,
 };
 use super::util::{consume_expected_character, parse_call_arguments};
 use super::{
@@ -22,6 +22,7 @@ pub fn declaration(tokens: &mut TokenIter) -> ParsingResult {
     match token.unwrap().token_type {
         TokenType::Let => variable_statement(tokens),
         TokenType::Fun => function_declaration_statement(tokens),
+        TokenType::Class => class_declaration_statement(tokens),
         _ => statement(tokens),
     }
 }
@@ -73,6 +74,12 @@ pub fn assignment(tokens: &mut TokenIter) -> ExpressionParsingResult {
             match left_side {
                 Expression::Variable(expression_variable) => Ok(Expression::Assign(
                     expression_variable,
+                    Box::new(right_side),
+                )),
+                Expression::Get(line_number, expr, property_identifier) => Ok(Expression::Set(
+                    line_number,
+                    expr,
+                    property_identifier,
                     Box::new(right_side),
                 )),
                 _ => Err(ParsingError {
@@ -337,6 +344,24 @@ pub fn call(tokens: &mut TokenIter) -> ExpressionParsingResult {
 
                 expression = Expression::Call(token.line_number, Box::from(expression), arguments);
             }
+
+            Some(&token) if token.token_type == TokenType::Dot => {
+                consume_expected_character(tokens, TokenType::Dot)?;
+
+                if let TokenType::Identifier(identifier) = &tokens.next().unwrap().token_type {
+                    expression = Expression::Get(
+                        token.line_number,
+                        Box::from(expression),
+                        identifier.clone(),
+                    );
+                } else {
+                    return Err(ParsingError {
+                        line_number: token.line_number,
+                        message: format!("Expected identifier following dot"),
+                    });
+                };
+            }
+
             _ => break,
         }
     }

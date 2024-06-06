@@ -1,7 +1,7 @@
 use core::fmt;
 use std::fmt::{Display, Formatter};
 
-use crate::interpreter::functions::CallableReference;
+use crate::interpreter::functions::Reference;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
@@ -11,6 +11,8 @@ pub enum Expression {
     Variable(ExpressionVariable),
     Assign(ExpressionVariable, Box<Expression>),
     Call(usize, Box<Expression>, Vec<Expression>),
+    Get(usize, Box<Expression>, String),
+    Set(usize, Box<Expression>, String, Box<Expression>),
 }
 
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
@@ -26,7 +28,7 @@ pub enum ExpressionLiteral {
     True,
     False,
     Nil,
-    Reference(CallableReference),
+    Reference(Reference),
 }
 
 impl ExpressionLiteral {
@@ -126,7 +128,7 @@ impl Display for Expression {
             }
             Expression::Call(_line_number, callee, arguments) => write!(
                 f,
-                "( {callee}.call( {} ))",
+                "( {callee} <-call-with- ( {} ))",
                 arguments
                     .iter()
                     .map(|argument_expression| argument_expression.to_string())
@@ -134,6 +136,12 @@ impl Display for Expression {
                         + ", "
                         + &cur_argument)
             ),
+            Expression::Get(_line_number, expression, identifier) => {
+                write!(f, "( {}.{} )", *expression, identifier)
+            }
+            Expression::Set(_line_number, expression, identifier, value) => {
+                write!(f, "( {}.{} <-- {} )", *expression, identifier, *value)
+            }
         }
     }
 }
@@ -146,9 +154,17 @@ impl Display for ExpressionLiteral {
             ExpressionLiteral::True => write!(f, "true"),
             ExpressionLiteral::False => write!(f, "false"),
             ExpressionLiteral::Nil => write!(f, "nil"),
-            ExpressionLiteral::Reference(callable_reference) => {
-                write!(f, "@Callable<Arity = {}>", callable_reference.arity)
-            }
+            ExpressionLiteral::Reference(reference) => match reference {
+                Reference::CallableReference(callable_reference) => {
+                    write!(f, "@Callable<Arity = {}>", callable_reference.arity)
+                }
+                Reference::ClassReference(class_reference) => {
+                    write!(f, "@Class<Name = \"{}\">", class_reference.name)
+                }
+                Reference::InstanceReference(instance_reference) => {
+                    write!(f, "@Instance<Name = \"{}\">", instance_reference.class.name)
+                }
+            },
         }
     }
 }
