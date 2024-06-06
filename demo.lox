@@ -1,7 +1,11 @@
-class foo {}
+let outside = 5;
 
-let bar = foo();
+class test_class {
+    fun test() {
+        print outside;
+    }
+}
 
-bar.gamer = "hi";
+let instance = test_class();
 
-print bar.gamer;
+instance.test();

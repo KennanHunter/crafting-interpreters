@@ -390,6 +390,8 @@ pub fn primary(tokens: &mut TokenIter) -> ExpressionParsingResult {
             Ok(Expression::Grouping(Box::from(expr)))
         }
 
+        TokenType::This => Ok(Expression::This),
+
         TokenType::Identifier(identifier_name) => Ok(Expression::Variable(ExpressionVariable {
             line_number: token.line_number,
             identifier_name: identifier_name.clone(),

@@ -4,7 +4,7 @@ mod statements;
 mod tests;
 mod types;
 
-use std::{borrow::Borrow, cell::RefCell, iter::zip, ops::Deref, rc::Rc};
+use std::{borrow::Borrow, cell::RefCell, collections::HashMap, iter::zip, ops::Deref, rc::Rc};
 
 use environment::{Environment, EnvironmentRef};
 use functions::{
@@ -147,6 +147,35 @@ pub fn interpret_statement(
             None => return Ok(BlockReturn::Returned(None)),
         },
         Statement::Class(class) => {
+            let mut methods = HashMap::new();
+
+            for method in class.methods {
+                let parent_environment = environment.clone();
+
+                methods.insert(
+                    method.name.clone(),
+                    CallableReference {
+                        arity: method.parameters.len(),
+                        subroutine: Rc::new(
+                            move |call_line_number, args| -> Result<BlockReturn, RuntimeError> {
+                                let env = Environment::with_parent(parent_environment.clone());
+                                let function_environment = Rc::new(RefCell::new(env.clone()));
+
+                                for (name, value) in zip(method.clone().parameters, args) {
+                                    function_environment.borrow_mut().define_variable(
+                                        call_line_number,
+                                        name,
+                                        value,
+                                    )?;
+                                }
+
+                                return interpret_step(function_environment, *method.clone().body);
+                            },
+                        ),
+                    },
+                );
+            }
+
             let env: &RefCell<Environment> = environment.borrow();
 
             env.borrow().define_variable(
@@ -154,6 +183,7 @@ pub fn interpret_statement(
                 class.name.clone(),
                 ExpressionLiteral::Reference(Reference::ClassReference(ClassReference {
                     name: class.name,
+                    methods: Rc::new(RefCell::new(methods)),
                 })),
             )?;
         }
@@ -557,6 +587,7 @@ pub fn interpret_expression_tree(
                 }),
             }
         }
+        Expression::This => todo!(),
     };
 
     return Ok(literal?);

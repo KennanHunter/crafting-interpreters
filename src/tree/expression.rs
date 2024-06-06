@@ -13,6 +13,7 @@ pub enum Expression {
     Call(usize, Box<Expression>, Vec<Expression>),
     Get(usize, Box<Expression>, String),
     Set(usize, Box<Expression>, String, Box<Expression>),
+    This,
 }
 
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
@@ -142,6 +143,7 @@ impl Display for Expression {
             Expression::Set(_line_number, expression, identifier, value) => {
                 write!(f, "( {}.{} <-- {} )", *expression, identifier, *value)
             }
+            Expression::This => write!(f, "( this )"),
         }
     }
 }

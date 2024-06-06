@@ -42,6 +42,7 @@ impl PartialEq for CallableReference {
 #[derive(Clone)]
 pub struct ClassReference {
     pub name: String,
+    pub methods: Rc<RefCell<HashMap<String, CallableReference>>>,
 }
 
 impl Debug for ClassReference {
@@ -82,13 +83,24 @@ impl InstanceReference {
         line_number: usize,
         property_name: &str,
     ) -> Result<ExpressionLiteral, RuntimeError> {
-        match self.fields.borrow().get(property_name).cloned() {
-            Some(literal) => Ok(literal),
-            None => Err(RuntimeError {
-                line_number,
-                message: format!("Unable to find property {property_name}"),
-            }),
+        let prop = self.fields.borrow().get(property_name).cloned();
+
+        if prop.is_some() {
+            return Ok(prop.unwrap());
         }
+
+        let method = self.class.methods.borrow().get(property_name).cloned();
+
+        if method.is_some() {
+            return Ok(ExpressionLiteral::Reference(Reference::CallableReference(
+                method.unwrap(),
+            )));
+        }
+
+        return Err(RuntimeError {
+            line_number,
+            message: format!("Unable to find property {property_name}"),
+        });
     }
 
     pub fn set_property(
