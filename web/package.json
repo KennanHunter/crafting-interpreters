@@ -1,0 +1,21 @@
+{
+  "name": "web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "copy-wasm:windows": "powershell -Command \"Copy-Item ../target/wasm32-unknown-unknown/release/rust-lox.wasm -Destination ./src/assets/rust-lox.wasm\"",
+    "copy-wasm:linux": "cp ../target/wasm32-unknown-unknown/release/rust-lox.wasm ./src/assets/rust-lox.wasm"
+  },
+  "dependencies": {
+    "solid-js": "^1.8.15"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-solid": "^2.10.2"
+  }
+}

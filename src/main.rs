@@ -15,6 +15,7 @@ use interpreter::interpret;
 use parser::{parse, ParsingResult};
 use resolver::{resolve, VariableMap};
 use scanner::scan_tokens;
+use wasm_bindgen::prelude::*;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -35,7 +36,7 @@ fn main() {
 
     let source_file = read_file(file_name.unwrap());
 
-    run(source_file);
+    run(&source_file);
 }
 
 fn read_file(file_name: &str) -> String {
@@ -48,8 +49,9 @@ fn read_file(file_name: &str) -> String {
 ///
 // #[warn(unused_variables)]
 // TODO: Rework this whole function
-fn run(source: String) {
-    let tokens = scan_tokens(source).unwrap();
+#[wasm_bindgen]
+pub fn run(source: &str) {
+    let tokens = scan_tokens(source.to_string()).unwrap();
 
     eprintln!("Scanned {} tokens", tokens.len());
 
