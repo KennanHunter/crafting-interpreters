@@ -46,7 +46,6 @@ impl TokenType {
         keyword_lookup.insert("nil", TokenType::Nil);
         keyword_lookup.insert("or", TokenType::Or);
         keyword_lookup.insert("and", TokenType::And);
-        keyword_lookup.insert("print", TokenType::Print);
         keyword_lookup.insert("return", TokenType::Return);
         keyword_lookup.insert("super", TokenType::Super);
         keyword_lookup.insert("this", TokenType::This);
@@ -119,11 +118,11 @@ mod tests {
     #[test]
     fn token_can_be_displayed() {
         let token = Token {
-            lexeme: "print".to_owned(),
-            token_type: crate::tokens::TokenType::Print,
+            lexeme: "for".to_owned(),
+            token_type: crate::tokens::TokenType::For,
             line_number: 1,
         };
 
-        assert_eq!(token.to_string(), "Print @ line=1 : \"print\"");
+        assert_eq!(token.to_string(), "For @ line=1 : \"for\"");
     }
 }

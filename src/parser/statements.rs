@@ -12,7 +12,6 @@ use super::{
 
 #[derive(Debug, Clone)]
 pub enum Statement {
-    Print(Expression),
     Variable(String, Expression),
     If(IfStatement),
     While(WhileStatement),
@@ -45,19 +44,6 @@ pub struct IfStatement {
 pub struct WhileStatement {
     pub condition: Expression,
     pub body: Box<ParsedStep>,
-}
-
-pub fn print_statement(tokens: &mut TokenIter) -> ParsingResult {
-    // consume "Print"
-    tokens.next();
-
-    let contained_expression = expression(tokens)?;
-
-    consume_expected_character(tokens, TokenType::Semicolon)?;
-
-    Ok(ParsedStep::Statement(Statement::Print(
-        contained_expression,
-    )))
 }
 
 pub fn variable_statement(tokens: &mut TokenIter) -> ParsingResult {

@@ -3,9 +3,8 @@ import { ModuleExports } from "./wasm-typings";
 
 function App() {
   init().then((mod) => {
-    let { add } = mod.exports as ModuleExports;
-    let res = add(5, 5);
-    console.log(res);
+    let { run } = mod.exports as ModuleExports;
+    run("print 1 + 1;");
   });
 
   return (

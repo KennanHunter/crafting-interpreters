@@ -8,7 +8,8 @@ use std::{borrow::Borrow, cell::RefCell, collections::HashMap, iter::zip, ops::D
 
 use environment::{Environment, EnvironmentRef};
 use functions::{
-    native::create_native_now, CallableReference, ClassReference, InstanceReference, Reference,
+    native::{create_native_now, create_native_print},
+    CallableReference, ClassReference, InstanceReference, Reference,
 };
 use statements::interpret_variable_definition;
 use types::BlockReturn;
@@ -26,8 +27,6 @@ use crate::{
     },
 };
 
-use self::statements::interpret_print;
-
 // TODO: Test
 pub fn interpret(variable_map: VariableMap, steps: Vec<ParsingResult>) -> Result<(), RuntimeError> {
     let global_environment = Environment::with_resolved_variable_map(variable_map);
@@ -36,6 +35,12 @@ pub fn interpret(variable_map: VariableMap, steps: Vec<ParsingResult>) -> Result
         0,
         "now".to_owned(),
         ExpressionLiteral::Reference(Reference::CallableReference(create_native_now())),
+    )?;
+
+    global_environment.define_variable(
+        0,
+        "print".to_owned(),
+        ExpressionLiteral::Reference(Reference::CallableReference(create_native_print())),
     )?;
 
     interpret_steps(Rc::new(RefCell::new(global_environment)), steps)?;
@@ -88,7 +93,6 @@ pub fn interpret_statement(
     line_number: usize,
 ) -> Result<BlockReturn, RuntimeError> {
     match statement {
-        Statement::Print(enclosed_expression) => interpret_print(environment, enclosed_expression)?,
         Statement::Variable(name, value) => {
             interpret_variable_definition(environment.clone(), line_number, name, value)?
         }

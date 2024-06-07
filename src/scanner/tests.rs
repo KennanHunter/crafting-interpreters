@@ -293,7 +293,7 @@ fn scan_decimal_number() {
 
 #[test]
 fn scan_keywords() {
-    let tokens_result = scan_tokens("return and print");
+    let tokens_result = scan_tokens("return and let");
 
     assert!(tokens_result.is_ok());
 
@@ -327,7 +327,7 @@ fn scan_keywords() {
             &(Token {
                 lexeme: "".to_string(),
                 line_number: 1,
-                token_type: TokenType::Print,
+                token_type: TokenType::Let,
             })
         )
     );

@@ -21,11 +21,20 @@ pub fn resolve(steps: Vec<ParsingResult>) -> Result<VariableMap, ResolvingError>
 
     scopes.begin_scope();
 
+    resolve_globals(&mut scopes)?;
+
     resolve_steps(&mut scopes, steps)?;
 
     scopes.end_scope();
 
     Ok(scopes.locals)
+}
+
+fn resolve_globals(scopes: &mut ScopeStack) -> ResolveResult {
+    scopes.define("now".to_owned());
+    scopes.define("print".to_owned());
+
+    Ok(())
 }
 
 fn resolve_steps(scopes: &mut ScopeStack, steps: Vec<ParsingResult>) -> ResolveResult {
@@ -136,9 +145,6 @@ fn resolve_operation(
 
 fn resolve_statement(scope_stack: &mut ScopeStack, stmt: Statement) -> ResolveResult {
     match stmt {
-        Statement::Print(expr) => {
-            resolve_expression(scope_stack, expr)?;
-        }
         Statement::Variable(name, expr) => {
             if scope_stack.is_locally_declared(&name) || scope_stack.is_locally_defined(&name) {
                 return Err(ResolvingError {

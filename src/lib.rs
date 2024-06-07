@@ -22,8 +22,9 @@ use wasm_bindgen::prelude::*;
 ///
 // #[warn(unused_variables)]
 // TODO: Rework this whole function
+#[wasm_bindgen]
 pub fn run(source: &str) {
-    let tokens = scan_tokens(source).unwrap();
+    let tokens = scan_tokens(source).unwrap(); 
 
     eprintln!("Scanned {} tokens", tokens.len());
 
