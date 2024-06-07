@@ -28,7 +28,7 @@ fn scan_single_number_literal() {
 
 #[test]
 fn scan_multiple_tokens() {
-    let tokens_result = scan_tokens("! == \"hii\" 5.2 { } // ignored".to_string());
+    let tokens_result = scan_tokens("! == \"hii\" 5.2 { } // ignored");
 
     assert!(tokens_result.is_ok());
 
@@ -121,8 +121,7 @@ fn scan_multiple_lines() {
 ! // this comment should be ignored
 (
 )
-"#
-        .to_string(),
+"#,
     );
 
     assert!(tokens_result.is_ok());
@@ -177,7 +176,7 @@ fn scan_multiple_lines() {
 
 #[test]
 fn scan_single_line_string() {
-    let tokens_result = scan_tokens("\"inside string\"".to_string());
+    let tokens_result = scan_tokens("\"inside string\"");
 
     assert!(tokens_result.is_ok());
 
@@ -198,7 +197,7 @@ fn scan_single_line_string() {
 
 #[test]
 fn scan_multi_line_string() {
-    let tokens_result = scan_tokens("\"inside\n string\"}".to_string());
+    let tokens_result = scan_tokens("\"inside\n string\"}");
 
     assert!(tokens_result.is_ok());
 
@@ -230,7 +229,7 @@ fn scan_multi_line_string() {
 
 #[test]
 fn scan_number_with_trailing_dot() {
-    let tokens_result = scan_tokens("100.".to_string());
+    let tokens_result = scan_tokens("100.");
 
     assert!(tokens_result.is_ok());
 
@@ -262,7 +261,7 @@ fn scan_number_with_trailing_dot() {
 
 #[test]
 fn scan_decimal_number() {
-    let tokens_result = scan_tokens("420.69".to_string());
+    let tokens_result = scan_tokens("420.69");
 
     assert!(tokens_result.is_ok());
 
@@ -294,7 +293,7 @@ fn scan_decimal_number() {
 
 #[test]
 fn scan_keywords() {
-    let tokens_result = scan_tokens("return and print".to_string());
+    let tokens_result = scan_tokens("return and print");
 
     assert!(tokens_result.is_ok());
 
@@ -336,7 +335,7 @@ fn scan_keywords() {
 
 #[test]
 fn scan_identifiers() {
-    let tokens_result = scan_tokens("fun epic complex_char".to_string());
+    let tokens_result = scan_tokens("fun epic complex_char");
 
     assert!(tokens_result.is_ok());
 

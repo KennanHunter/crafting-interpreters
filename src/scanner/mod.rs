@@ -15,7 +15,8 @@ use crate::{
 ///
 /// Errors found returns all errors in the scanning process, even if there are
 /// multiple scanning issues
-pub fn scan_tokens(source: String) -> Result<Vec<Token>, Vec<ScanningError>> {
+// #[wasm_bindgen]
+pub fn scan_tokens(source: &str) -> Result<Vec<Token>, Vec<ScanningError>> {
     let mut tokens: Vec<Token> = Vec::new();
     let mut parsing_errors: Vec<ScanningError> = Vec::new();
 

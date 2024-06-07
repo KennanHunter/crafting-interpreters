@@ -51,7 +51,7 @@ fn read_file(file_name: &str) -> String {
 // TODO: Rework this whole function
 #[wasm_bindgen]
 pub fn run(source: &str) {
-    let tokens = scan_tokens(source.to_string()).unwrap();
+    let tokens = scan_tokens(source).unwrap();
 
     eprintln!("Scanned {} tokens", tokens.len());
 
