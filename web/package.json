@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "copy-wasm:windows": "powershell -Command \"Copy-Item ../target/wasm32-unknown-unknown/release/rust-lox.wasm -Destination ./src/assets/rust-lox.wasm\"",
+    "process-wasm": "wasm-bindgen ../target/wasm32-unknown-unknown/release/rust-lox.wasm --out-dir wasm-pkg --target web",
+    "copy-wasm:windows": "powershell -Command \"Copy-Item ./wasm-pkg/rust-lox_bg.wasm -Destination ./src/assets/rust-lox.wasm\"",
     "copy-wasm:linux": "cp ../target/wasm32-unknown-unknown/release/rust-lox.wasm ./src/assets/rust-lox.wasm"
   },
   "dependencies": {
