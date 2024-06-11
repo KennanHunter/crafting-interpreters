@@ -1,10 +1,11 @@
-import init from "./assets/rust-lox.wasm?init";
-import { ModuleExports } from "./wasm-typings";
+import { createEffect } from "solid-js";
+import init from "./wasm/rust-lox";
 
 function App() {
-  init().then((mod) => {
-    let { run } = mod.exports as ModuleExports;
-    run("print 1 + 1;");
+  createEffect(() => {
+    init().then((initOutput) => {
+      console.log("from js: " + initOutput.add(1, 1).toString());
+    });
   });
 
   return (

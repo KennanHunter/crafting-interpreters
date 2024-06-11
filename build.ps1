@@ -4,8 +4,6 @@ cd web
 
 yarn process-wasm
 
-yarn copy-wasm:windows
-
 yarn build
 
 echo "use yarn dev or yarn preview to use website"
