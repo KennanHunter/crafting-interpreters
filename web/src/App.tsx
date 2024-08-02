@@ -1,5 +1,6 @@
-import { createEffect, createSignal } from "solid-js";
+import { createEffect, createSignal, onMount } from "solid-js";
 import init, { run } from "./wasm/rust-lox";
+import { getLog, pushToLog } from "./log";
 
 function App() {
   const [isLoaded, setIsLoaded] = createSignal(false);
@@ -12,6 +13,18 @@ function App() {
 
   const [code, setCode] = createSignal("");
 
+  let logRef: HTMLPreElement | undefined;
+
+  onMount(() => {
+    document.addEventListener("storage", (_event) => {
+      console.log("storage event listener triggered");
+
+      if (!logRef) return;
+
+      logRef.innerText = getLog();
+    });
+  });
+
   return (
     <div>
       <textarea
@@ -22,11 +35,22 @@ function App() {
       <button
         disabled={!isLoaded()}
         onClick={() => {
+          pushToLog("clicked");
+
           run(code());
         }}
       >
         Run
       </button>
+
+      <pre
+        style={{
+          border: "2px solid black",
+          width: "15em",
+          height: "10em",
+        }}
+        ref={logRef}
+      />
     </div>
   );
 }
