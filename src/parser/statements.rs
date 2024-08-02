@@ -162,10 +162,7 @@ pub fn class_declaration_statement(tokens: &mut TokenIter) -> ParsingResult {
         }
 
         match function_declaration_statement(tokens)? {
-            ParsedStep::Statement(stmt) => match stmt {
-                Statement::Fun(function) => methods.push(function),
-                _ => unreachable!(),
-            },
+            ParsedStep::Statement(Statement::Fun(function)) => methods.push(function),
             _ => unreachable!(),
         }
     }

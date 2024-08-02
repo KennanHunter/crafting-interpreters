@@ -33,7 +33,7 @@ impl Display for Token {
 }
 
 impl TokenType {
-    pub fn from_literal(literal: &String) -> Option<TokenType> {
+    pub fn from_literal(literal: &str) -> Option<TokenType> {
         // TODO: Stop this HashMap from being built every time we run TokenType
         let mut keyword_lookup: HashMap<&str, TokenType> = HashMap::new();
 
@@ -54,8 +54,7 @@ impl TokenType {
         keyword_lookup.insert("while", TokenType::While);
         keyword_lookup.insert("and", TokenType::And);
 
-        return keyword_lookup
-            .get(literal.as_str()).cloned();
+        return keyword_lookup.get(literal).cloned();
     }
 }
 

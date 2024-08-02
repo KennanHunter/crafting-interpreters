@@ -35,21 +35,12 @@ pub enum ExpressionLiteral {
 impl ExpressionLiteral {
     pub fn is_same_type(&self, other: &ExpressionLiteral) -> bool {
         match self {
-            ExpressionLiteral::Number(_) => match other {
-                ExpressionLiteral::Number(_) => true,
-                _ => false,
-            },
-            ExpressionLiteral::String(_) => match other {
-                ExpressionLiteral::String(_) => true,
-                _ => false,
-            },
+            ExpressionLiteral::Number(_) => matches!(other, ExpressionLiteral::Number(_)),
+            ExpressionLiteral::String(_) => matches!(other, ExpressionLiteral::String(_)),
             ExpressionLiteral::True | ExpressionLiteral::False => {
                 *other == ExpressionLiteral::True || *other == ExpressionLiteral::False
             }
-            ExpressionLiteral::Nil => match other {
-                ExpressionLiteral::Nil => true,
-                _ => false,
-            },
+            ExpressionLiteral::Nil => matches!(other, ExpressionLiteral::Nil),
             ExpressionLiteral::Reference(_) => false,
         }
     }

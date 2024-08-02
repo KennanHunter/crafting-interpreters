@@ -141,7 +141,6 @@ impl Environment {
 
     pub fn set_variable_at(
         &self,
-        line_number: usize,
         name: String,
         value: ExpressionLiteral,
         depth: usize,
@@ -149,12 +148,9 @@ impl Environment {
         match depth {
             1.. => {
                 if let Some(parent_environment) = &self.parent_environment {
-                    return parent_environment.borrow_mut().set_variable_at(
-                        line_number,
-                        name,
-                        value,
-                        depth - 1,
-                    );
+                    return parent_environment
+                        .borrow_mut()
+                        .set_variable_at(name, value, depth - 1);
                 } else {
                     unreachable!("parent environment referenced but does not exist")
                 }
@@ -205,9 +201,7 @@ impl Environment {
         let potential_depth = self.get_variable_map().get(&variable).cloned();
 
         match potential_depth {
-            Some(depth) => {
-                self.set_variable_at(variable.line_number, variable.identifier_name, value, depth)
-            }
+            Some(depth) => self.set_variable_at(variable.identifier_name, value, depth),
             None => Err(RuntimeError {
                 line_number: variable.line_number,
                 // TODO: err

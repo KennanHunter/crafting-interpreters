@@ -141,17 +141,16 @@ fn scan_token(
 
             loop {
                 match characters.next() {
-                    Some(char) if char == '"' => break,
-                    Some(char) if char == '\n' => {
+                    Some('"') => break,
+                    Some('\n') => {
                         *line += 1;
-                        contained_string.push(char)
+                        contained_string.push('\n');
                     }
-
-                    Some(char) => contained_string.push(char),
+                    Some(ch) => contained_string.push(ch),
                     None => {
                         return Err(ScanningError {
                             line_number: *line,
-                            message: "End of string not found".to_string(),
+                            message: "Closing quotation at end of string not found".to_string(),
                         })
                     }
                 }

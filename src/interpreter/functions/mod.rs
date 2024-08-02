@@ -31,10 +31,6 @@ impl PartialEq for CallableReference {
     fn eq(&self, other: &Self) -> bool {
         self.arity == other.arity && Rc::ptr_eq(&self.subroutine, &other.subroutine)
     }
-
-    fn ne(&self, other: &Self) -> bool {
-        self.arity != other.arity || !Rc::ptr_eq(&self.subroutine, &other.subroutine)
-    }
 }
 
 // TODO: Test
@@ -57,10 +53,6 @@ impl Debug for ClassReference {
 impl PartialEq for ClassReference {
     fn eq(&self, _other: &Self) -> bool {
         false
-    }
-
-    fn ne(&self, _other: &Self) -> bool {
-        true
     }
 }
 
@@ -85,15 +77,15 @@ impl InstanceReference {
     ) -> Result<ExpressionLiteral, RuntimeError> {
         let prop = self.fields.borrow().get(property_name).cloned();
 
-        if prop.is_some() {
-            return Ok(prop.unwrap());
-        }
+        if let Some(property) = prop {
+            return Ok(property);
+        };
 
         let method = self.class.methods.borrow().get(property_name).cloned();
 
-        if method.is_some() {
+        if let Some(method) = method {
             return Ok(ExpressionLiteral::Reference(Reference::CallableReference(
-                method.unwrap(),
+                method,
             )));
         }
 
@@ -128,9 +120,5 @@ impl Debug for InstanceReference {
 impl PartialEq for InstanceReference {
     fn eq(&self, _other: &Self) -> bool {
         false
-    }
-
-    fn ne(&self, _other: &Self) -> bool {
-        true
     }
 }
