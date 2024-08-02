@@ -27,7 +27,9 @@ fn main() {
 }
 
 #[cfg(target_family = "wasm")]
-fn main() {}
+fn main() {
+    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+}
 
 #[cfg(not(target_family = "wasm"))]
 fn read_file(file_name: &str) -> String {

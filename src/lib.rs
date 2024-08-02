@@ -11,6 +11,7 @@ pub mod resolver;
 pub mod scanner;
 pub mod tokens;
 pub mod tree;
+pub mod tests;
 
 use std::time;
 
