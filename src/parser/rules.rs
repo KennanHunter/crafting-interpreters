@@ -19,7 +19,10 @@ use super::{
 pub fn declaration(tokens: &mut TokenIter) -> ParsingResult {
     let token = tokens.peek();
 
-    match token.unwrap().token_type {
+    match token
+        .expect("There should always be another character in declaration")
+        .token_type
+    {
         TokenType::Let => variable_statement(tokens),
         TokenType::Fun => function_declaration_statement(tokens),
         TokenType::Class => class_declaration_statement(tokens),
@@ -83,7 +86,8 @@ pub fn assignment(tokens: &mut TokenIter) -> ExpressionParsingResult {
                 )),
                 _ => Err(ParsingError {
                     line_number: token.line_number,
-                    message: "expected left side of assignment operator to be identifier".to_string(),
+                    message: "expected left side of assignment operator to be identifier"
+                        .to_string(),
                 }),
             }
         }

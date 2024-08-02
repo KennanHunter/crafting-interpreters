@@ -26,6 +26,8 @@ use wasm_bindgen::prelude::*;
 // TODO: Rework this whole function
 #[wasm_bindgen]
 pub fn run(source: &str) {
+    report!("{}", source.escape_unicode());
+
     let tokens = scan_tokens(source).unwrap();
 
     report_progress!("Scanned {} tokens", tokens.len());
@@ -35,26 +37,24 @@ pub fn run(source: &str) {
     report_progress!("Parsed tokens into {} blocks", syntax_tree.len());
 
     // TODO: Check for errors in sub blocks
-    let parsing_errors = syntax_tree
+    match syntax_tree
         .iter()
-        .filter(|&parsed_block| parsed_block.is_err());
+        .filter_map(|parsed_block| parsed_block.clone().err())
+        .collect::<Vec<_>>()
+        .as_slice()
+    {
+        [] => {}
+        errors => {
+            for error in errors {
+                report_error!(
+                    "Parsing error appeared at line number {} with issue: {}",
+                    error.line_number,
+                    error.message
+                );
+            }
 
-    let mut has_parsing_error = false;
-
-    for error_res in parsing_errors {
-        let error = error_res.clone().unwrap_err();
-
-        report_error!(
-            "Parsing error appeared at line number {} with issue: {}",
-            error.line_number,
-            error.message
-        );
-
-        has_parsing_error = true
-    }
-
-    if has_parsing_error {
-        return;
+            return;
+        }
     }
 
     let resolved_variable_map: VariableMap = match resolve(syntax_tree.clone()) {

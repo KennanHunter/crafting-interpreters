@@ -4,7 +4,7 @@ import init from "./wasm/rust-lox";
 function App() {
   createEffect(() => {
     init().then(({ run }) => {
-      run("print(1 + 1);");
+      (run as unknown as (input: string) => void)("print(1 + 1);");
     });
   });
 

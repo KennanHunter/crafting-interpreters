@@ -26,7 +26,7 @@ macro_rules! report {
 macro_rules! report_error {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
-    ($($t:tt)*) => ($crate::logging::log(&("Error:".to_owned() + &format_args!($($t)*).to_string())))
+    ($($t:tt)*) => ($crate::logging::log(&("Error: ".to_owned() + &format_args!($($t)*).to_string())))
 }
 
 #[cfg(not(target_family = "wasm"))]
@@ -47,7 +47,7 @@ macro_rules! report_error {
 macro_rules! report_progress {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
-    ($($t:tt)*) => ($crate::logging::log(&("Progress:".to_owned() + &format_args!($($t)*).to_string())))
+    ($($t:tt)*) => ($crate::logging::log(&("Progress: ".to_owned() + &format_args!($($t)*).to_string())))
 }
 
 #[cfg(not(target_family = "wasm"))]

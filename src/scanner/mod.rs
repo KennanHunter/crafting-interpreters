@@ -34,13 +34,9 @@ pub fn scan_tokens(source: &str) -> Result<Vec<Token>, Vec<ScanningError>> {
                 };
 
                 tokens.push(token);
-
-                if token_type == TokenType::EOF {
-                    break;
-                }
             }
             Ok(None) => {
-                continue;
+                break;
             }
             Err(err) => {
                 parsing_errors.push(ScanningError {
@@ -66,13 +62,11 @@ fn scan_token(
     characters: &mut Peekable<Chars>,
     line: &mut usize,
 ) -> Result<Option<TokenType>, ScanningError> {
-    let character: Option<char> = characters.next();
-
-    if character.is_none() {
-        return Ok(Some(TokenType::EOF));
+    let Some(character) = characters.next() else {
+        return Ok(None);
     };
 
-    let token_type = match character.unwrap() {
+    let token_type = match character {
         '(' => Some(TokenType::LeftParen),
         ')' => Some(TokenType::RightParen),
         '{' => Some(TokenType::LeftBrace),

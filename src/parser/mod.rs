@@ -32,14 +32,12 @@ pub fn parse(tokens_vec: Vec<Token>) -> Vec<ParsingResult> {
 fn top_parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
     let mut return_vector: Vec<ParsingResult> = vec![];
 
-    loop {
-        return_vector.push(declaration(tokens));
-
-        let token = tokens.peek();
-
-        if token.is_none() || token.is_some_and(|token| token.token_type == TokenType::EOF) {
+    while let Some(token) = tokens.peek() {
+        if token.token_type == TokenType::EOF {
             break;
         }
+
+        return_vector.push(declaration(tokens));
     }
 
     return_vector

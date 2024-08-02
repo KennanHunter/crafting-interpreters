@@ -141,7 +141,6 @@ fn resolve_operation(
             resolve_expression(scope_stack, *op.right)?;
         }
     };
-    
     Ok(())
 }
 
