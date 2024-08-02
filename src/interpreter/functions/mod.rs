@@ -97,10 +97,10 @@ impl InstanceReference {
             )));
         }
 
-        return Err(RuntimeError {
+        Err(RuntimeError {
             line_number,
             message: format!("Unable to find property {property_name}"),
-        });
+        })
     }
 
     pub fn set_property(

@@ -17,7 +17,7 @@ use super::rules::{comparison, equality, expression, term};
 
 #[test]
 fn test_primary_parse_false_token() {
-    let tokens_vec = vec![Token {
+    let tokens_vec = [Token {
         token_type: TokenType::False,
         lexeme: "".to_string(),
         line_number: 1,
@@ -32,7 +32,7 @@ fn test_primary_parse_false_token() {
 
 #[test]
 fn test_primary_parse_string_token() {
-    let tokens_vec = vec![Token {
+    let tokens_vec = [Token {
         token_type: TokenType::String("Inside string".to_string()),
         lexeme: "".to_string(),
         line_number: 1,
@@ -52,7 +52,7 @@ fn test_primary_parse_string_token() {
 
 #[test]
 fn test_primary_parse_number_token() {
-    let tokens_vec = vec![Token {
+    let tokens_vec = [Token {
         token_type: TokenType::Number(10.0),
         lexeme: "".to_string(),
         line_number: 1,
@@ -70,8 +70,7 @@ fn test_primary_parse_number_token() {
 
 #[test]
 fn test_unary_parse_simple_bang() {
-    let tokens_vec = vec![
-        Token {
+    let tokens_vec = [Token {
             token_type: TokenType::Bang,
             lexeme: "".to_string(),
             line_number: 1,
@@ -80,8 +79,7 @@ fn test_unary_parse_simple_bang() {
             token_type: TokenType::True,
             lexeme: "".to_string(),
             line_number: 1,
-        },
-    ];
+        }];
 
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
@@ -98,8 +96,7 @@ fn test_unary_parse_simple_bang() {
 
 #[test]
 fn test_unary_parse_multiple_bang() {
-    let tokens_vec = vec![
-        Token {
+    let tokens_vec = [Token {
             token_type: TokenType::Bang,
             lexeme: "".to_string(),
             line_number: 1,
@@ -113,8 +110,7 @@ fn test_unary_parse_multiple_bang() {
             token_type: TokenType::True,
             lexeme: "".to_string(),
             line_number: 1,
-        },
-    ];
+        }];
 
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 
@@ -134,8 +130,7 @@ fn test_unary_parse_multiple_bang() {
 
 #[test]
 fn test_factor_parse_simple_multiplication() {
-    let tokens_vec = vec![
-        Token {
+    let tokens_vec = [Token {
             token_type: TokenType::Number(10.0),
             lexeme: "".to_string(),
             line_number: 1,
@@ -149,8 +144,7 @@ fn test_factor_parse_simple_multiplication() {
             token_type: TokenType::Number(4.0),
             lexeme: "".to_string(),
             line_number: 1,
-        },
-    ];
+        }];
 
     let mut tokens: TokenIter = tokens_vec.iter().peekable();
 

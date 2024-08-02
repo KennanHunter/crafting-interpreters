@@ -83,7 +83,7 @@ pub fn assignment(tokens: &mut TokenIter) -> ExpressionParsingResult {
                 )),
                 _ => Err(ParsingError {
                     line_number: token.line_number,
-                    message: format!("expected left side of assignment operator to be identifier"),
+                    message: "expected left side of assignment operator to be identifier".to_string(),
                 }),
             }
         }
@@ -356,7 +356,7 @@ pub fn call(tokens: &mut TokenIter) -> ExpressionParsingResult {
                 } else {
                     return Err(ParsingError {
                         line_number: token.line_number,
-                        message: format!("Expected identifier following dot"),
+                        message: "Expected identifier following dot".to_string(),
                     });
                 };
             }

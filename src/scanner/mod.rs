@@ -56,7 +56,7 @@ pub fn scan_tokens(source: &str) -> Result<Vec<Token>, Vec<ScanningError>> {
         return Err(parsing_errors);
     }
 
-    return Ok(tokens);
+    Ok(tokens)
 }
 
 /// Progresses characters past the next token and returns it in TokenType enum form
@@ -241,5 +241,5 @@ fn scan_token(
         }
     };
 
-    return Ok(token_type);
+    Ok(token_type)
 }

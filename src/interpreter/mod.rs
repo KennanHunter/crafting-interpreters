@@ -134,7 +134,7 @@ pub fn interpret_statement(
                                 )?;
                             }
 
-                            return interpret_step(function_environment, *function_body.clone());
+                            interpret_step(function_environment, *function_body.clone())
                         },
                     ),
                 }));
@@ -173,7 +173,7 @@ pub fn interpret_statement(
                                     )?;
                                 }
 
-                                return interpret_step(function_environment, *method.clone().body);
+                                interpret_step(function_environment, *method.clone().body)
                             },
                         ),
                     },
@@ -480,7 +480,7 @@ pub fn interpret_expression_tree(
                     return Ok(left);
                 }
 
-                return Ok(interpret_expression_tree(environment, *right)?);
+                return interpret_expression_tree(environment, *right);
             }
 
             Operation::Or(LogicalOperation {
@@ -494,7 +494,7 @@ pub fn interpret_expression_tree(
                     return Ok(left);
                 }
 
-                return Ok(interpret_expression_tree(environment, *right)?);
+                return interpret_expression_tree(environment, *right);
             }
         },
         Expression::Variable(var) => {
@@ -534,7 +534,7 @@ pub fn interpret_expression_tree(
                     }
                     Reference::InstanceReference(_) => Err(RuntimeError {
                         line_number,
-                        message: format!("Can't call a class instance, only a class type"),
+                        message: "Can't call a class instance, only a class type".to_string(),
                     }),
                 },
                 invalid_type => Err(RuntimeError {
@@ -556,16 +556,16 @@ pub fn interpret_expression_tree(
                     }
                     Reference::ClassReference(_) => Err(RuntimeError {
                         line_number,
-                        message: format!("Can't access properties on a class, only an instance"),
+                        message: "Can't access properties on a class, only an instance".to_string(),
                     }),
                     _ => Err(RuntimeError {
                         line_number,
-                        message: format!("Can only access properties on a instance"),
+                        message: "Can only access properties on a instance".to_string(),
                     }),
                 },
                 _ => Err(RuntimeError {
                     line_number,
-                    message: format!("Can only access properties on a instance"),
+                    message: "Can only access properties on a instance".to_string(),
                 }),
             }
         }
@@ -578,23 +578,23 @@ pub fn interpret_expression_tree(
                         .set_property(identifier, interpret_expression_tree(environment, *value)?),
                     Reference::ClassReference(_) => Err(RuntimeError {
                         line_number,
-                        message: format!("Can't access properties on a class, only an instance"),
+                        message: "Can't access properties on a class, only an instance".to_string(),
                     }),
                     _ => Err(RuntimeError {
                         line_number,
-                        message: format!("Can only access properties on a instance"),
+                        message: "Can only access properties on a instance".to_string(),
                     }),
                 },
                 _ => Err(RuntimeError {
                     line_number,
-                    message: format!("Can only access properties on a instance"),
+                    message: "Can only access properties on a instance".to_string(),
                 }),
             }
         }
         Expression::This => todo!(),
     };
 
-    return Ok(literal?);
+    literal
 }
 
 fn evaluate_callable_reference(
@@ -632,7 +632,7 @@ pub fn is_truthy(environment: EnvironmentRef, expr: Expression) -> Result<bool, 
     match expr {
         Expression::Literal(literal) => match literal {
             ExpressionLiteral::Number(number) => Ok(number != 0.0),
-            ExpressionLiteral::String(str) => Ok(str.len() > 0),
+            ExpressionLiteral::String(str) => Ok(!str.is_empty()),
             ExpressionLiteral::True => Ok(true),
             ExpressionLiteral::False => Ok(false),
             ExpressionLiteral::Nil => Ok(false),

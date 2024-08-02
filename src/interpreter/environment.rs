@@ -192,7 +192,7 @@ impl Environment {
             None => Err(RuntimeError {
                 line_number: variable.line_number,
                 // TODO: err
-                message: format!("Something fucked up"),
+                message: "Something fucked up".to_string(),
             }),
         }
     }
@@ -211,7 +211,7 @@ impl Environment {
             None => Err(RuntimeError {
                 line_number: variable.line_number,
                 // TODO: err
-                message: format!("Something fucked up"),
+                message: "Something fucked up".to_string(),
             }),
         }
     }

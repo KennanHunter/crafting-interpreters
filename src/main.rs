@@ -26,7 +26,7 @@ fn main() {}
 
 #[cfg(not(target_family = "wasm"))]
 fn read_file(file_name: &str) -> String {
-    let file_contents = std::fs::read_to_string(file_name).expect("File name is invalid");
+    
 
-    return file_contents;
+    std::fs::read_to_string(file_name).expect("File name is invalid")
 }

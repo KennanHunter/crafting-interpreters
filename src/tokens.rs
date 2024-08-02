@@ -55,8 +55,7 @@ impl TokenType {
         keyword_lookup.insert("and", TokenType::And);
 
         return keyword_lookup
-            .get(literal.as_str())
-            .map(|token| token.clone());
+            .get(literal.as_str()).cloned();
     }
 }
 

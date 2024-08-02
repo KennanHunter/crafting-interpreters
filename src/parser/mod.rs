@@ -42,7 +42,7 @@ fn top_parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
         }
     }
 
-    return return_vector;
+    return_vector
 }
 
 fn parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
@@ -61,5 +61,5 @@ fn parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
         return_vector.push(declaration(tokens));
     }
 
-    return return_vector;
+    return_vector
 }

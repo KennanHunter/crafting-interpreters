@@ -22,7 +22,7 @@ pub fn create_native_print() -> CallableReference {
     CallableReference {
         arity: 1,
         subroutine: Rc::new(|line_number, args| -> Result<BlockReturn, RuntimeError> {
-            match args.get(0) {
+            match args.first() {
                 Some(expr) => {
                     let mut evaluated_string = expr.to_string();
 

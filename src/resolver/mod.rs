@@ -113,7 +113,7 @@ fn resolve_operation(
     scope_stack: &mut ScopeStack,
     operation: Operation,
 ) -> Result<(), ResolvingError> {
-    Ok(match operation {
+    match operation {
         Operation::Not(operation) | Operation::Negate(operation) => {
             resolve_expression(scope_stack, *operation.operand)?
         }
@@ -140,7 +140,9 @@ fn resolve_operation(
             resolve_expression(scope_stack, *op.left)?;
             resolve_expression(scope_stack, *op.right)?;
         }
-    })
+    };
+    
+    Ok(())
 }
 
 fn resolve_statement(scope_stack: &mut ScopeStack, stmt: Statement) -> ResolveResult {
