@@ -1,4 +1,4 @@
-use std::{io::Write, rc::Rc, time::UNIX_EPOCH};
+use std::{rc::Rc, time::UNIX_EPOCH};
 
 use crate::{
     errors::RuntimeError, interpreter::types::BlockReturn, tree::expression::ExpressionLiteral,
@@ -28,14 +28,24 @@ pub fn create_native_print() -> CallableReference {
 
                     evaluated_string.push('\n');
 
-                    if std::io::stdout()
-                        .write(evaluated_string.as_bytes())
-                        .is_err()
+                    #[cfg(not(target_family = "wasm"))]
                     {
-                        return Err(RuntimeError {
-                            line_number,
-                            message: "Failed to access stdout".to_owned(),
-                        });
+                        if std::io::Write::write(
+                            &mut std::io::stdout(),
+                            evaluated_string.as_bytes(),
+                        )
+                        .is_err()
+                        {
+                            return Err(RuntimeError {
+                                line_number,
+                                message: "Failed to access stdout".to_owned(),
+                            });
+                        }
+                    }
+
+                    #[cfg(target_family = "wasm")]
+                    {
+                        crate::logging::report!("{}", evaluated_string);
                     }
 
                     Ok(BlockReturn::NoReturn)

@@ -1,10 +1,6 @@
-use std::{env, fs};
-
-use rust_lox::run;
-
 #[cfg(not(target_family = "wasm"))]
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<String> = std::env::args().collect();
 
     let file_name: Result<&str, &str> = match args.len() {
         3.. => Err(""),
@@ -22,14 +18,15 @@ fn main() {
 
     let source_file = read_file(file_name.unwrap());
 
-    run(&source_file);
+    rust_lox::run(&source_file);
 }
 
 #[cfg(target_family = "wasm")]
 fn main() {}
 
+#[cfg(not(target_family = "wasm"))]
 fn read_file(file_name: &str) -> String {
-    let file_contents = fs::read_to_string(file_name).expect("File name is invalid");
+    let file_contents = std::fs::read_to_string(file_name).expect("File name is invalid");
 
     return file_contents;
 }
