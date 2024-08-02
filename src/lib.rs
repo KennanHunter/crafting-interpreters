@@ -26,7 +26,11 @@ use wasm_bindgen::prelude::*;
 // TODO: Rework this whole function
 #[wasm_bindgen]
 pub fn run(source: &str) {
-    report!("{}", source.escape_unicode());
+    report!(
+        "Parsing {} characters: \n {}",
+        source.len(),
+        source.escape_default()
+    );
 
     let tokens = scan_tokens(source).unwrap();
 
