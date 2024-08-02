@@ -44,6 +44,9 @@ jobs:
         working-directory: web
         run: yarn install
 
+      - name: Install Wasm bindgen
+        run: cargo install wasm-bindgen-cli
+
       - name: Link Wasm
         working-directory: web
         run: yarn process-wasm
