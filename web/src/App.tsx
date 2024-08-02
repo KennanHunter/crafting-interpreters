@@ -1,46 +1,37 @@
-import { createEffect, createSignal, onMount } from "solid-js";
+import { useEffect, useState } from "react";
 import init, { run } from "./wasm/rust-lox";
-import { getLog, pushToLog } from "./log";
+import { useLogResults } from "./store";
 
 function App() {
-  const [isLoaded, setIsLoaded] = createSignal(false);
+  const [code, setCode] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  createEffect(() => {
+  const { log, clear } = useLogResults();
+
+  useEffect(() => {
     init().then(() => {
       setIsLoaded(true);
     });
   });
 
-  const [code, setCode] = createSignal("");
-
-  let logRef: HTMLPreElement | undefined;
-
-  onMount(() => {
-    document.addEventListener("storage", (_event) => {
-      console.log("storage event listener triggered");
-
-      if (!logRef) return;
-
-      logRef.innerText = getLog();
-    });
-  });
-
   return (
     <div>
-      <textarea
-        value={code()}
-        onInput={(e) => setCode(e.currentTarget.value)}
-      />
+      <textarea value={code} onInput={(e) => setCode(e.currentTarget.value)} />
       <br />
       <button
-        disabled={!isLoaded()}
+        disabled={!isLoaded}
         onClick={() => {
-          pushToLog("clicked");
-
-          run(code());
+          run(code);
         }}
       >
         Run
+      </button>
+      <button
+        onClick={() => {
+          clear();
+        }}
+      >
+        Clear
       </button>
 
       <pre
@@ -49,8 +40,9 @@ function App() {
           width: "15em",
           height: "10em",
         }}
-        ref={logRef}
-      />
+      >
+        {log.join("\n")}
+      </pre>
     </div>
   );
 }
