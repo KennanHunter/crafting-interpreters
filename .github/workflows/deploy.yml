@@ -25,6 +25,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Run on nightly
+        run: rustup default nightly
       - name: Test code
         run: cargo test
       - name: Install Wasm target
