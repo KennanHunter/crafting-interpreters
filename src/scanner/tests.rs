@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use crate::{
-    scanner::{scan_token, scan_tokens},
+    scanner::{scan_token, scan_tokens, TokenScanResult},
     tokens::{Token, TokenType},
 };
 
@@ -9,21 +9,21 @@ use crate::{
 fn scan_single_token() {
     let token = scan_token(&mut "{".chars().peekable(), &mut 0);
 
-    assert_eq!(token, Ok(Some(TokenType::LeftBrace)))
+    assert_eq!(token, TokenScanResult::Token(TokenType::LeftBrace))
 }
 
 #[test]
 fn scan_double_token() {
     let token = scan_token(&mut "==".chars().peekable(), &mut 0);
 
-    assert_eq!(token, Ok(Some(TokenType::EqualEqual)))
+    assert_eq!(token, TokenScanResult::Token(TokenType::EqualEqual))
 }
 
 #[test]
 fn scan_single_number_literal() {
     let token = scan_token(&mut "0".chars().peekable(), &mut 0);
 
-    assert_eq!(token, Ok(Some(TokenType::Number(0.0))))
+    assert_eq!(token, TokenScanResult::Token(TokenType::Number(0.0)))
 }
 
 #[test]
@@ -97,17 +97,6 @@ fn scan_multiple_tokens() {
                 lexeme: "".to_string(),
                 line_number: 1,
                 token_type: TokenType::RightBrace
-            })
-        )
-    );
-
-    assert_eq!(
-        tokens.next(),
-        Some(
-            &(Token {
-                lexeme: "".to_string(),
-                line_number: 1,
-                token_type: TokenType::EOF
             })
         )
     );
@@ -275,17 +264,6 @@ fn scan_decimal_number() {
                 lexeme: "".to_string(),
                 line_number: 1,
                 token_type: TokenType::Number(420.69),
-            })
-        )
-    );
-
-    assert_eq!(
-        tokens.next(),
-        Some(
-            &(Token {
-                lexeme: "".to_string(),
-                line_number: 1,
-                token_type: TokenType::EOF,
             })
         )
     );

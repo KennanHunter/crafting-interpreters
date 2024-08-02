@@ -26,7 +26,7 @@ pub fn scan_tokens(source: &str) -> Result<Vec<Token>, Vec<ScanningError>> {
         let token_type_result = scan_token(&mut characters, &mut line);
 
         match token_type_result {
-            Ok(Some(token_type)) => {
+            TokenScanResult::Token(token_type) => {
                 let token = Token {
                     token_type: token_type.clone(),
                     lexeme: "".to_string(),
@@ -35,15 +35,18 @@ pub fn scan_tokens(source: &str) -> Result<Vec<Token>, Vec<ScanningError>> {
 
                 tokens.push(token);
             }
-            Ok(None) => {
-                break;
+            TokenScanResult::Whitespace => {
+                continue;
             }
-            Err(err) => {
+            TokenScanResult::Err(err) => {
                 parsing_errors.push(ScanningError {
                     line_number: line,
                     message: err.message,
                 });
                 continue;
+            }
+            TokenScanResult::End => {
+                break;
             }
         }
     }
@@ -55,59 +58,66 @@ pub fn scan_tokens(source: &str) -> Result<Vec<Token>, Vec<ScanningError>> {
     Ok(tokens)
 }
 
+#[derive(Debug, PartialEq)]
+pub enum TokenScanResult {
+    Token(TokenType),
+    Whitespace,
+    End,
+    Err(ScanningError),
+}
+
 /// Progresses characters past the next token and returns it in TokenType enum form
 ///
 /// Can error with ScanningError on malformed literals or non-ascii characters
-fn scan_token(
-    characters: &mut Peekable<Chars>,
-    line: &mut usize,
-) -> Result<Option<TokenType>, ScanningError> {
+fn scan_token(characters: &mut Peekable<Chars>, line: &mut usize) -> TokenScanResult {
     let Some(character) = characters.next() else {
-        return Ok(None);
+        return TokenScanResult::End;
     };
 
-    let token_type = match character {
-        '(' => Some(TokenType::LeftParen),
-        ')' => Some(TokenType::RightParen),
-        '{' => Some(TokenType::LeftBrace),
-        '}' => Some(TokenType::RightBrace),
-        ',' => Some(TokenType::Comma),
-        '.' => Some(TokenType::Dot),
-        '-' => Some(TokenType::Minus),
-        '+' => Some(TokenType::Plus),
-        ';' => Some(TokenType::Semicolon),
-        '*' => Some(TokenType::Star),
+    use TokenScanResult::*;
+
+    match character {
+        '(' => Token(TokenType::LeftParen),
+        ')' => Token(TokenType::RightParen),
+        '{' => Token(TokenType::LeftBrace),
+        '}' => Token(TokenType::RightBrace),
+        ',' => Token(TokenType::Comma),
+        '.' => Token(TokenType::Dot),
+        '-' => Token(TokenType::Minus),
+        '+' => Token(TokenType::Plus),
+        ';' => Token(TokenType::Semicolon),
+        '*' => Token(TokenType::Star),
 
         '!' => match characters.peek() {
             Some('=') => {
                 characters.next();
-                Some(TokenType::BangEqual)
+                Token(TokenType::BangEqual)
             }
-            _ => Some(TokenType::Bang),
+            _ => Token(TokenType::Bang),
         },
 
         '=' => match characters.peek() {
             Some('=') => {
                 characters.next();
-                Some(TokenType::EqualEqual)
+                Token(TokenType::EqualEqual)
             }
-            _ => Some(TokenType::Equal),
+            _ => Token(TokenType::Equal),
         },
 
         '<' => match characters.peek() {
             Some('=') => {
                 characters.next();
-                Some(TokenType::LessEqual)
+                Token(TokenType::LessEqual)
             }
-            _ => Some(TokenType::Less),
+            _ => Token(TokenType::Less),
         },
 
         '>' => match characters.peek() {
             Some('=') => {
                 characters.next();
-                Some(TokenType::GreaterEqual)
+                Token(TokenType::GreaterEqual)
             }
-            _ => Some(TokenType::Greater),
+            _ => Token(TokenType::Greater),
         },
 
         '/' => match characters.peek() {
@@ -125,9 +135,9 @@ fn scan_token(
                     }
                 }
 
-                None
+                Whitespace
             }
-            _ => Some(TokenType::Slash),
+            _ => Token(TokenType::Slash),
         },
 
         '"' => {
@@ -150,17 +160,15 @@ fn scan_token(
                 }
             }
 
-            Some(TokenType::String(contained_string))
+            Token(TokenType::String(contained_string))
         }
 
         '\n' => {
             *line += 1;
-            None
+            Whitespace
         }
 
-        ' ' => None,
-        '\r' => None,
-        '\t' => None,
+        ' ' | '\r' | '\t' => Whitespace,
 
         number if number.is_ascii_digit() => {
             let mut contained_number_literal = String::from(number);
@@ -199,8 +207,8 @@ fn scan_token(
             }
 
             match contained_number_literal.parse::<f64>() {
-                Ok(parsed) => Some(TokenType::Number(parsed)),
-                Err(_) => {
+                Ok(parsed) => Token(TokenType::Number(parsed)),
+                Result::Err(_) => {
                     return Err(ScanningError {
                         line_number: *line,
                         message: "Failed to parse number".to_string(),
@@ -221,8 +229,8 @@ fn scan_token(
             }
 
             match TokenType::from_literal(&contained_literal) {
-                Some(keyword) => Some(keyword),
-                None => Some(TokenType::Identifier(contained_literal)),
+                Some(keyword) => Token(keyword),
+                None => Token(TokenType::Identifier(contained_literal)),
             }
         }
 
@@ -232,7 +240,5 @@ fn scan_token(
                 message: format!("unrecognized character {}", unrecognized_character),
             })
         }
-    };
-
-    Ok(token_type)
+    }
 }

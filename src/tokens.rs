@@ -105,8 +105,6 @@ pub enum TokenType {
     True,
     Let,
     While,
-
-    EOF,
 }
 
 #[cfg(test)]
