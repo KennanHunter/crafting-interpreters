@@ -32,12 +32,8 @@ pub fn parse(tokens_vec: Vec<Token>) -> Vec<ParsingResult> {
 fn top_parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
     let mut return_vector: Vec<ParsingResult> = vec![];
 
-    loop {
+    while let Some(_) = tokens.peek() {
         return_vector.push(declaration(tokens));
-
-        if tokens.peek().is_none() {
-            break;
-        }
     }
 
     return_vector
@@ -46,10 +42,8 @@ fn top_parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
 fn parse_steps(tokens: &mut TokenIter) -> Vec<ParsingResult> {
     let mut return_vector: Vec<ParsingResult> = vec![];
 
-    loop {
-        let token = tokens.peek();
-
-        if token.is_none() || token.is_some_and(|token| token.token_type == TokenType::RightBrace) {
+    while let Some(token) = tokens.peek() {
+        if token.token_type == TokenType::RightBrace {
             break;
         }
 
