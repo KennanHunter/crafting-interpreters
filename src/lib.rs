@@ -9,11 +9,9 @@ pub mod interpreter;
 pub mod parser;
 pub mod resolver;
 pub mod scanner;
+pub mod tests;
 pub mod tokens;
 pub mod tree;
-pub mod tests;
-
-use std::time;
 
 use interpreter::interpret;
 use parser::{parse, ParsingResult};
@@ -75,15 +73,19 @@ pub fn run(source: &str) {
         }
     };
 
-    let starting_time = time::Instant::now();
+    #[cfg(not(target_family = "wasm"))]
+    let starting_time = std::time::Instant::now();
 
     report!("\n---- output ----");
 
     match interpret(resolved_variable_map, syntax_tree) {
-        Ok(_) => report!(
-            "---- program finished ----\n\nExecuted in {}μs",
-            starting_time.elapsed().as_micros()
-        ),
+        Ok(_) => {
+            report!("---- program finished ----\n");
+
+            #[cfg(not(target_family = "wasm"))]
+            report!("\nExecuted in {}μs", starting_time.elapsed().as_micros())
+        }
+
         Err(err) => {
             report!(
                 "---- program errored ----\n\nExperienced runtime error at line {} with message:\n {}",
