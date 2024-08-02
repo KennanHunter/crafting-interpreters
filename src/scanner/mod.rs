@@ -4,6 +4,7 @@ mod util;
 use std::{char, iter::Peekable, str::Chars};
 
 use util::is_valid_literal_character;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{
     errors::ScanningError,

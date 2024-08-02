@@ -2,6 +2,7 @@ use std::{env, fs};
 
 use rust_lox::run;
 
+#[cfg(not(target_family = "wasm"))]
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -23,6 +24,9 @@ fn main() {
 
     run(&source_file);
 }
+
+#[cfg(target_family = "wasm")]
+fn main() {}
 
 fn read_file(file_name: &str) -> String {
     let file_contents = fs::read_to_string(file_name).expect("File name is invalid");

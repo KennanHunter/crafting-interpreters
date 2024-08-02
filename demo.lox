@@ -1,11 +1,5 @@
-let outside = 5;
-
-class test_class {
-    fun test() {
-        print(outside);
-    }
+fun test(param) {
+    print(param);
 }
 
-let instance = test_class();
-
-instance.test();
+print(test(5));
