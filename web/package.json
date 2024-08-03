@@ -11,6 +11,7 @@
     "process-wasm": "wasm-bindgen ../target/wasm32-unknown-unknown/release/rust-lox.wasm --out-dir src/wasm --target web"
   },
   "dependencies": {
+    "@tabler/icons-react": "^3.11.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^4.5.4"

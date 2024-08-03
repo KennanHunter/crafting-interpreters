@@ -46,10 +46,10 @@ function App() {
     <div
       style={{
         display: "grid",
-        gap: "3.5em",
+        gap: "1em",
         height: "100%",
         width: "90%",
-        gridTemplateColumns: "1fr 1fr",
+        gridTemplateColumns: "1fr 6em 1fr",
         padding: "10px 5%",
       }}
     >
@@ -65,36 +65,25 @@ function App() {
       <div
         style={{
           display: "flex",
-          position: "absolute",
-          left: "0",
-          top: "0",
-          width: "100%",
-          justifyContent: "center",
+          flexDirection: "column",
+          gap: "0.5em",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.5em",
+        <button
+          disabled={!isLoaded}
+          onClick={() => {
+            run(code);
           }}
         >
-          <button
-            disabled={!isLoaded}
-            onClick={() => {
-              run(code);
-            }}
-          >
-            Run
-          </button>
-          <button
-            onClick={() => {
-              clear();
-            }}
-          >
-            Clear
-          </button>
-        </div>
+          Run
+        </button>
+        <button
+          onClick={() => {
+            clear();
+          }}
+        >
+          Clear
+        </button>
       </div>
 
       <pre
