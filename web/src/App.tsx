@@ -1,10 +1,10 @@
-import "./App.css";
+import { IconBrandGithub, IconPlayerPlay } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import init, { run } from "./wasm/rust-lox";
-import { useLogResults } from "./store";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { IconBrandGithub, IconPlayerPlay } from "@tabler/icons-react";
+import "./App.css";
+import { useLogResults } from "./store";
+import init, { run } from "./wasm/rust-lox";
 
 const useCodeState = create<{
   code: string;
@@ -45,7 +45,7 @@ function App() {
 
   return (
     <div
-      className="grid h-full text-white bg-slate-900"
+      className="grid h-full"
       style={{
         gridTemplateRows: "4em 1fr",
       }}
@@ -68,7 +68,7 @@ function App() {
         }}
       >
         <textarea
-          className="resize-none h-full bg-slate-800 border border-black rounded-sm whitespace-pre-wrap overflow p-2"
+          className="resize-none h-full bg-slate-800 border border-black rounded-sm whitespace-pre-wrap p-2 overflow-y-scroll"
           value={code}
           onInput={(e) => setCode(e.currentTarget.value)}
         />
@@ -97,14 +97,9 @@ function App() {
             Clear
           </button>
         </div>
-        <pre
-          className="border bg-slate-800 border-black rounded-sm whitespace-pre-wrap overflow p-2"
-          style={{
-            overflowWrap: "anywhere",
-          }}
-        >
+        <div className="resize-none h-full bg-slate-800 border border-black rounded-sm whitespace-pre-wrap p-2 overflow-y-scroll">
           {log.join("\n")}
-        </pre>
+        </div>
       </div>
     </div>
   );
