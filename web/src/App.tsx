@@ -4,6 +4,7 @@ import init, { run } from "./wasm/rust-lox";
 import { useLogResults } from "./store";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { IconBrandGithub, IconPlayerPlay } from "@tabler/icons-react";
 
 const useCodeState = create<{
   code: string;
@@ -11,7 +12,7 @@ const useCodeState = create<{
 }>()(
   persist(
     (set) => ({
-      code: `
+      code: `\
 let test_variable = "hello";
 
 print(test_variable + " world");
@@ -44,62 +45,67 @@ function App() {
 
   return (
     <div
+      className="grid h-full text-white bg-slate-900"
       style={{
-        display: "grid",
-        gap: "1em",
-        height: "100%",
-        width: "90%",
-        gridTemplateColumns: "1fr 6em 1fr",
-        padding: "10px 5%",
+        gridTemplateRows: "4em 1fr",
       }}
     >
-      <textarea
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-        value={code}
-        onInput={(e) => setCode(e.currentTarget.value)}
-      />
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.5em",
-        }}
-      >
-        <button
-          disabled={!isLoaded}
-          onClick={() => {
-            run(code);
-          }}
+      <div className="bg-slate-800 flex w-full justify-start align-middle items-center px-4 rounded-b-md">
+        <h1>Kennan's Wasm Lox Interpreter</h1>
+        <a
+          className="ml-auto"
+          href="https://github.com/kennanhunter/crafting-interpreters"
         >
-          Run
-        </button>
-        <button
-          onClick={() => {
-            clear();
-          }}
-        >
-          Clear
-        </button>
+          <button className="border border-black aspect-square  rounded-sm">
+            <IconBrandGithub width={50} />
+          </button>
+        </a>
       </div>
-
-      <pre
+      <div
+        className="grid gap-4 h-full w-full p-6"
         style={{
-          border: "1px solid black",
-          borderRadius: "2px",
-          width: "100%",
-          height: "100%",
-          margin: 0,
-          padding: 0,
-          whiteSpace: "pre-wrap",
-          overflowWrap: "anywhere",
+          gridTemplateColumns: "1fr 4em 1fr",
         }}
       >
-        {log.join("\n")}
-      </pre>
+        <textarea
+          className="resize-none h-full bg-slate-800 border border-black rounded-sm whitespace-pre-wrap overflow p-2"
+          value={code}
+          onInput={(e) => setCode(e.currentTarget.value)}
+        />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.5em",
+          }}
+        >
+          <button
+            disabled={!isLoaded}
+            className="border bg-slate-800 border-black rounded-lg aspect-square grid place-content-center"
+            onClick={() => {
+              run(code);
+            }}
+          >
+            <IconPlayerPlay height={"100%"} />
+          </button>
+          <button
+            className="border bg-slate-800 border-black rounded-lg aspect-square grid place-content-center"
+            onClick={() => {
+              clear();
+            }}
+          >
+            Clear
+          </button>
+        </div>
+        <pre
+          className="border bg-slate-800 border-black rounded-sm whitespace-pre-wrap overflow p-2"
+          style={{
+            overflowWrap: "anywhere",
+          }}
+        >
+          {log.join("\n")}
+        </pre>
+      </div>
     </div>
   );
 }
