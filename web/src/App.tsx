@@ -1,4 +1,8 @@
-import { IconBrandGithub, IconPlayerPlay } from "@tabler/icons-react";
+import {
+  IconBrandGithub,
+  IconPlayerPlay,
+  IconRefresh,
+} from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -9,6 +13,7 @@ import init, { run } from "./wasm/rust-lox";
 const useCodeState = create<{
   code: string;
   setCode: (newCode: string) => void;
+  resetCode: () => void;
 }>()(
   persist(
     (set) => ({
@@ -24,6 +29,11 @@ print(5 + 3 * 2);
           code: newCode,
         });
       },
+      resetCode: () => {
+        set({
+          code: useCodeState.getInitialState().code,
+        });
+      },
     }),
     {
       name: "code-storage",
@@ -32,7 +42,7 @@ print(5 + 3 * 2);
 );
 
 function App() {
-  const { code, setCode } = useCodeState();
+  const { code, setCode, resetCode } = useCodeState();
   const [isLoaded, setIsLoaded] = useState(false);
 
   const { log, clear } = useLogResults();
@@ -67,11 +77,35 @@ function App() {
           gridTemplateColumns: "1fr 4em 1fr",
         }}
       >
-        <textarea
-          className="resize-none h-full bg-slate-800 border border-black rounded-sm whitespace-pre-wrap p-2 overflow-y-scroll"
-          value={code}
-          onInput={(e) => setCode(e.currentTarget.value)}
-        />
+        <div
+          className=" grid border border-black rounded-sm whitespace-pre-wrap "
+          style={{
+            gridTemplateColumns: "1fr 8rem",
+            gridTemplateRows: "1fr 8rem",
+          }}
+        >
+          <textarea
+            className="resize-none  w-full h-full bg-slate-800 p-2 overflow-y-scroll"
+            value={code}
+            onInput={(e) => setCode(e.currentTarget.value)}
+            style={{
+              gridColumn: "1/3",
+              gridRow: "1/3",
+            }}
+          />
+          <button
+            style={{
+              gridRowStart: 2,
+              gridColumnStart: 2,
+            }}
+            className="m-auto border border-black shadow-lg p-4 rounded-md grid place-items-center bg-slate-900"
+            onClick={() => {
+              resetCode();
+            }}
+          >
+            <IconRefresh />
+          </button>
+        </div>
         <div
           style={{
             display: "flex",
