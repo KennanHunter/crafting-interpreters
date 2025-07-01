@@ -56,8 +56,9 @@ jobs:
         run: yarn build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
+          name: github-pages
           path: ./web/dist
 
   deploy:
